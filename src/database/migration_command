@@ -1,0 +1,33 @@
+npx sequelize-cli model:generate --name User --attributes full_name:string,username:string,email:string,phone_number:string,password:string,account_status:string,country:string,referred_by:string,reg_date:date,avatar:string
+
+npx sequelize-cli model:generate --name Currency --attributes currency_name:string,currency_address:string,currency_network_id:integer,currency_has_network:integer,currency_buy_rate:float,currency_sell_rate:float,currency_symbol:string,currency_price:float,currency_is_active:integer,currency_image:string
+
+npx sequelize-cli model:generate --name CurrencyNetwork --attributes network_name:string,network_image:string
+
+npx sequelize-cli model:generate --name Transaction --attributes user_email:string,trnx_amount:double,trnx_reference:text,trnx_date:date,trnx_type:string,trnx_desc:string,trnx_status:integer,trnx_rate:float,trnx_address:string,trnx_image:string,to_receive:float,currency:string
+
+npx sequelize-cli model:generate --name Wallet --attributes amount:double,currency_symbol:string,user_id:string
+
+npx sequelize-cli model:generate --name ReferralWallet --attributes amount:double,currency_symbol:string,user_id:string
+
+npx sequelize-cli model:generate --name GiftCard --attributes gcard_name:string,gcard_image:string,is_active:integer,gcard_country:string,gcard_currency:string,gcard_type:string,gcard_sellprice:integer,gcard_min_sell:integer,gcard_minrate_range:integer,gcard_maxrate_range:integer,gcard_naira_rate_range:integer,gcard_buyprice:integer
+
+npx sequelize-cli model:generate --name Airtime --attributes id:integer,airtimeIsP:string,airtimeCommission:float,createdAt:timestamp,isActive:integer,airtimeImage:string
+
+npx sequelize-cli model:generate --name MobileNetwork --attributes code:string,name:string
+
+npx sequelize-cli model:generate --name ElectricCompany --attributes code:string,name:string
+
+npx sequelize-cli model:generate --name MeterType --attributes code:string,name:string
+
+npx sequelize-cli model:generate --name CableTV --attributes code:string,name:string
+
+npx sequelize-cli model:generate --name CableTVPackage --attributes code:string,name:string,amount:double
+
+npx sequelize-cli model:generate --name CableSubscription --attributes cable_provider:string,cable_provider_image:string,cable_commission:float,is_active:integer,provider_id:string
+
+npx sequelize-cli model:generate --name ElectricBill --attributes bill_provider:string,bill_provider_image:string,bill_commission:float,is_active:integer,provider_id:string
+
+npx sequelize-cli model:generate --name DataPlan --attributes network_id:string,data_plans_isp:string,data_plans_commission:float,data_plans_isp_image:string,is_active:integer
+
+npx sequelize-cli model:generate --name Setting --attributes kyclevel1_max_withdrawal:integer,kyclevel2_max_withdrawal:integer,kyclevel3_max_withdrawal:integer,referral_commission:integer,account_bank:string,account_number:string,deposit_instructions:string,min_withdrawal:float,clubkonect_api:text,clubkonect_userid:string,max_withdrawal:float
