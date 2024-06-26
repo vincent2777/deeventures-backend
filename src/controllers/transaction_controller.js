@@ -21,7 +21,7 @@ class TransactionController {
             // console.log("REQUEST PAYLOAD::: ", requestBody);
 
             //  Validate the Request Body.
-            const {error, value} = TransactionValidator.createTransactionSchema.validate(requestBody);
+            const { error, value } = TransactionValidator.createTransactionSchema.validate(requestBody);
             if (error) {
                 const response = new Response(
                     false,
@@ -67,15 +67,13 @@ class TransactionController {
      **/
     static getTransactions = async (req, res) => {
         try {
-
-
-
             const { type, status, page = 1, limit = 10 } = req.query;
             const { id } = req.requestPayload;
 
             let whereClause = {
                 user_id: id,
             };
+
             if (type) {
                 // Filter by trnx_type if provided
                 switch (type) {
@@ -95,24 +93,28 @@ class TransactionController {
                         whereClause.trnx_type = "Wallet Funding";
                         break;
                     default:
-                        whereClause.trnx_type = ""
+                        whereClause.trnx_type = null;
                 }
             }
+
             if (status) {
                 // Filter by status if provided (excluding "All")
                 whereClause.trnx_status = status;
             }
-            // console.log("WHERE CLAUSE::: ", whereClause);
+
+            // Clean up whereClause to remove null values
+            whereClause = Object.fromEntries(Object.entries(whereClause).filter(([_, v]) => v != null));
 
             // Pagination calculation
-            const offset = (page - 1) * limit;
+            const offset = (parseInt(page, 10) - 1) * parseInt(limit, 10);
 
             const transactions = await Transactions.findAll({
                 where: whereClause,
                 order: [[Sequelize.col("trnx_date"), "DESC"]],
-                limit,
-                offset
+                limit: parseInt(limit, 10),
+                offset: offset,
             });
+
             if (!transactions.length) {
                 const response = new Response(
                     false,
@@ -148,7 +150,7 @@ class TransactionController {
      **/
     static getTransaction = async (req, res) => {
         try {
-            const {id} = req.params;
+            const { id } = req.params;
 
             const transaction = await Transactions.findByPk(id, {
                 include: {
@@ -194,11 +196,11 @@ class TransactionController {
      **/
     static updateTransaction = async (req, res) => {
         try {
-            const {id} = req.params;
+            const { id } = req.params;
             const requestBody = req.body;
 
             //  Validate the Request Body.
-            const {error, value} = TransactionValidator.updateTransactionSchema.validate(requestBody);
+            const { error, value } = TransactionValidator.updateTransactionSchema.validate(requestBody);
             if (error) {
                 const response = new Response(
                     false,

@@ -37,7 +37,8 @@ module.exports = {
       currency_network_id: {
         allowNull: false,
         foreignKey: true,
-        type: Sequelize.ARRAY(Sequelize.INTEGER)
+        type: Sequelize.JSON // Changed to JSON type
+        // type: Sequelize.ARRAY(Sequelize.INTEGER)
       },
       currency_image: {
         allowNull: false,
