@@ -3,6 +3,7 @@
 import models from "../database/models";
 import Response from "../utils/response";
 import ElectricCompanyValidator from "../utils/validators/electricCompany_validator";
+import axios from "axios";
 
 const { ElectricCompanies, ElectricBills, MeterTypes } = models;
 
@@ -67,7 +68,7 @@ class ElectricController {
             const requestBody = req.body;
 
             //  Validate the Request Body.
-            const {error, value} = ElectricCompanyValidator.createMeterTypeSchema.validate(requestBody);
+            const { error, value } = ElectricCompanyValidator.createMeterTypeSchema.validate(requestBody);
             if (error) {
                 const response = new Response(
                     false,
@@ -256,6 +257,7 @@ class ElectricController {
             return res.status(response.code).json(response);
         }
     };
+
 }
 
 export default ElectricController;

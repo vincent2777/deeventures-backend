@@ -24,6 +24,7 @@ class BillPaymentValidator {
         dataPlan: Joi.number().required(),
         mobileNumber: Joi.string().required(),
         dataBundleAmount: Joi.number().required(),
+        totalAmt: Joi.number().required(),
     });
 
     /**
@@ -45,6 +46,7 @@ class BillPaymentValidator {
         meterType: Joi.string().required(),
         meterNumber: Joi.string().required(),
         amount: Joi.number().required(),
+        totalAmt: Joi.number().required(),
         mobileNumber: Joi.string().required(),
     });
 }

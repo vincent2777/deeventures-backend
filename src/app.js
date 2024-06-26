@@ -42,7 +42,7 @@ app.get('/', (req, res) => {
     const response = new Response(
         true,
         200,
-        'Welcome to DeeVentures API V1.'
+        'Welcome to DeeVentures API V1 Now.'
     );
     res.status(response.code).json(response);
 });

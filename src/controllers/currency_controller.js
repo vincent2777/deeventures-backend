@@ -21,7 +21,7 @@ class CurrencyController {
             // console.log("REQUEST PAYLOAD::: ", requestBody);
 
             //  Validate the Request Body.
-            const {error, value} = CurrencyValidator.createCurrencySchema.validate(requestBody);
+            const { error, value } = CurrencyValidator.createCurrencySchema.validate(requestBody);
             if (error) {
                 const response = new Response(
                     false,
@@ -68,6 +68,14 @@ class CurrencyController {
     static getCurrencies = async (req, res) => {
         try {
             const currencies = await Currencies.findAll();
+    
+            // Log the retrieved currencies
+            console.log('Currencies:', currencies);
+    
+            if (!Array.isArray(currencies)) {
+                throw new TypeError('Currencies is not an array');
+            }
+    
             if (!currencies.length) {
                 const response = new Response(
                     false,
@@ -76,22 +84,39 @@ class CurrencyController {
                 );
                 return res.status(response.code).json(response);
             }
-
+    
             const currenciesWithNetworks = await Promise.all(currencies.map(async (eachCurrency) => {
-
+                // Log each currency to check its structure
+                console.log('Each Currency:', eachCurrency);
+    
+                let currencyNetworkIds;
+                try {
+                    currencyNetworkIds = JSON.parse(eachCurrency.currency_network_id);
+                    if (!Array.isArray(currencyNetworkIds)) {
+                        throw new TypeError('Parsed currency_network_id is not an array');
+                    }
+                    // Convert all elements to integers
+                    currencyNetworkIds = currencyNetworkIds.map(id => parseInt(id, 10));
+                } catch (e) {
+                    console.error(`Failed to parse currency_network_id for currency id ${eachCurrency.id}:`, e);
+                    throw new TypeError(`currency_network_id is not an array for currency id ${eachCurrency.id}`);
+                }
+    
                 // Find all CurrencyNetworks matching the IDs
                 const currencyNetworks = await CurrencyNetworks.findAll({
                     where: {
                         id: {
-                            [Op.in]: eachCurrency.currency_network_id
+                            [Op.in]: currencyNetworkIds
                         }
                     },
                     attributes: ["id", "network_name", "network_address"] // Add all the necessary attributes you need
                 });
-
-                return { ...eachCurrency.dataValues, currency_networks: currencyNetworks }
+    
+                console.log('Currency Networks:', currencyNetworks);
+    
+                return { ...eachCurrency.dataValues, currency_network_id: currencyNetworkIds, currency_networks: currencyNetworks };
             }));
-
+    
             const response = new Response(
                 true,
                 200,
@@ -99,10 +124,10 @@ class CurrencyController {
                 { currencies: currenciesWithNetworks }
             );
             return res.status(response.code).json(response);
-
+    
         } catch (error) {
             console.log(`ERROR::: ${error}`);
-
+    
             const response = new Response(
                 false,
                 500,
@@ -111,6 +136,7 @@ class CurrencyController {
             return res.status(response.code).json(response);
         }
     }
+    
 
 
     /**
