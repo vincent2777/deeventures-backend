@@ -4,7 +4,7 @@ import Response from "../utils/response";
 import models from "../database/models";
 import WalletValidator from "../utils/validators/wallet_validator";
 
-const { Wallets, ReferralWallets } = models;
+const { Wallets, ReferralWallets, Transactions, Settings } = models;
 
 
 /**
@@ -325,7 +325,7 @@ class WalletController {
 
 
     /**
-     *@function createWallet, (Update single wallet).
+     *@function updateWallet, (Update single wallet).
      **/
     static updateWallet = async (req, res) => {
         try {
@@ -409,6 +409,74 @@ class WalletController {
                 false,
                 500,
                 'Server error, please try again later.'
+            );
+            return res.status(response.code).json(response);
+        }
+    };
+
+
+    /**
+     *@function depositMoney, (Deposit money).
+     **/
+    static depositMoney = async (req, res) => {
+        try {
+            const { id } = req.params;
+            const { amount } = req.body;
+
+            //  Get the previous Amount.
+            const wallet = await Wallets.findOne({
+                where: { user_id: id },
+            });
+
+            // Insert transaction information into Transactions table
+            const transactionPayload = {
+                user_id: id,
+                trnx_amount: amount,
+                trnx_type: "Wallet Funding",
+                trnx_desc: `Wallet funding with ${ amount } naira.`,
+                trnx_status: 0,
+                trnx_rate: amount,
+                trnx_address: wallet.id,
+                trnx_image: "",
+                to_receive: amount,
+                currency: "NGN",
+            };
+            const transaction = await Transactions.create({ ...transactionPayload });
+            if (!transaction) {
+                const response = new Response(
+                    false,
+                    409,
+                    "Failed to create transaction."
+                );
+                return res.status(response.code).json(response);
+            }
+
+            // Get account settings
+            const settings = await Settings.findByPk(1);
+            if (!settings) {
+                const response = new Response(
+                    false,
+                    404,
+                    "Settings not found."
+                );
+                return res.status(response.code).json(response);
+            }
+
+            const response = new Response(
+                true,
+                200,
+                "Deposit initiated successfully.",
+                { settings, transaction }
+            );
+            return res.status(response.code).json(response);
+
+        } catch (error) {
+            console.log(`ERROR::: ${error}`);
+
+            const response = new Response(
+                false,
+                500,
+                "Server error, please try again later."
             );
             return res.status(response.code).json(response);
         }

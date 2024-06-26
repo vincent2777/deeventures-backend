@@ -70,3 +70,4 @@ module.exports = {
     await queryInterface.dropTable('Settings');
   }
 };
+//# sourceMappingURL=20240614050607-create-setting.js.map

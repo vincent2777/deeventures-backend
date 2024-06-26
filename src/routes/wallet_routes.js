@@ -70,4 +70,11 @@ walletRouter.put(
     WalletController.updateReferralWallet
 );
 
+// Deposit money
+walletRouter.post(
+    "/deposit_money/:id",
+    TokenValidation.userTokenValidation,
+    WalletController.depositMoney
+);
+
 export default walletRouter;

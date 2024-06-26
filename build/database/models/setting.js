@@ -1,9 +1,8 @@
 "use strict";
 
-import { Model } from "sequelize";
-
+var _sequelize = require("sequelize");
 module.exports = (sequelize, DataTypes) => {
-  class Setting extends Model {
+  class Setting extends _sequelize.Model {
     /**
      * Helper method for defining associations.
      * This method is not a part of Sequelize lifecycle.
@@ -32,6 +31,6 @@ module.exports = (sequelize, DataTypes) => {
     tableName: "Settings",
     freezeTableName: true
   });
-
   return Setting;
 };
+//# sourceMappingURL=setting.js.map

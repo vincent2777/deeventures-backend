@@ -3,58 +3,59 @@
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.createTable('Settings', {
+    await queryInterface.createTable("Transactions", {
       id: {
         allowNull: false,
         autoIncrement: true,
         primaryKey: true,
         type: Sequelize.INTEGER
       },
-      kyclevel1_max_withdrawal: {
+      user_id: {
         allowNull: false,
         type: Sequelize.INTEGER
       },
-      kyclevel2_max_withdrawal: {
+      trnx_amount: {
         allowNull: false,
-        type: Sequelize.INTEGER
+        type: Sequelize.DOUBLE
       },
-      kyclevel3_max_withdrawal: {
+      trnx_reference: {
         allowNull: false,
-        type: Sequelize.INTEGER
-      },
-      referral_commission: {
-        allowNull: false,
-        type: Sequelize.INTEGER
-      },
-      account_bank: {
-        allowNull: false,
-        type: Sequelize.STRING
-      },
-      account_number: {
-        allowNull: false,
-        type: Sequelize.STRING
-      },
-      account_name: {
-        allowNull: false,
-        type: Sequelize.STRING
-      },
-      deposit_instructions: {
-        allowNull: false,
-        type: Sequelize.STRING
-      },
-      min_withdrawal: {
-        allowNull: false,
-        type: Sequelize.FLOAT
-      },
-      clubkonect_api: {
         type: Sequelize.TEXT
       },
-      clubkonect_userid: {
+      trnx_date: {
+        allowNull: false,
+        type: Sequelize.DATE
+      },
+      trnx_type: {
+        allowNull: false,
+        type: Sequelize.ENUM("Gift Card Sale", "Coin Purchase", "Coin Sale", "Bill Payment", "Wallet Funding", "Fund Withdrawal", "Promo Usage")
+      },
+      trnx_desc: {
+        allowNull: false,
         type: Sequelize.STRING
       },
-      max_withdrawal: {
+      trnx_status: {
+        allowNull: false,
+        type: Sequelize.INTEGER
+      },
+      trnx_rate: {
         allowNull: false,
         type: Sequelize.FLOAT
+      },
+      trnx_address: {
+        allowNull: false,
+        type: Sequelize.STRING
+      },
+      trnx_image: {
+        type: Sequelize.STRING
+      },
+      to_receive: {
+        allowNull: false,
+        type: Sequelize.FLOAT
+      },
+      currency: {
+        allowNull: false,
+        type: Sequelize.STRING
       },
       createdAt: {
         allowNull: false,
@@ -67,6 +68,7 @@ module.exports = {
     });
   },
   async down(queryInterface, Sequelize) {
-    await queryInterface.dropTable('Settings');
+    await queryInterface.dropTable("Transactions");
   }
 };
+//# sourceMappingURL=20240512175438-create-transaction.js.map

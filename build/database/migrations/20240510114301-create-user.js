@@ -3,58 +3,56 @@
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.createTable('Settings', {
+    await queryInterface.createTable('Users', {
       id: {
         allowNull: false,
         autoIncrement: true,
         primaryKey: true,
         type: Sequelize.INTEGER
       },
-      kyclevel1_max_withdrawal: {
-        allowNull: false,
-        type: Sequelize.INTEGER
-      },
-      kyclevel2_max_withdrawal: {
-        allowNull: false,
-        type: Sequelize.INTEGER
-      },
-      kyclevel3_max_withdrawal: {
-        allowNull: false,
-        type: Sequelize.INTEGER
-      },
-      referral_commission: {
-        allowNull: false,
-        type: Sequelize.INTEGER
-      },
-      account_bank: {
+      full_name: {
         allowNull: false,
         type: Sequelize.STRING
       },
-      account_number: {
+      username: {
         allowNull: false,
         type: Sequelize.STRING
       },
-      account_name: {
+      email: {
         allowNull: false,
         type: Sequelize.STRING
       },
-      deposit_instructions: {
+      phone_number: {
+        allowNull: true,
+        type: Sequelize.STRING
+      },
+      password: {
         allowNull: false,
         type: Sequelize.STRING
       },
-      min_withdrawal: {
+      account_status: {
         allowNull: false,
-        type: Sequelize.FLOAT
+        type: Sequelize.ENUM("active", "pending"),
+        defaultValue: "pending"
       },
-      clubkonect_api: {
-        type: Sequelize.TEXT
-      },
-      clubkonect_userid: {
+      country: {
+        allowNull: true,
         type: Sequelize.STRING
       },
-      max_withdrawal: {
+      referred_by: {
+        allowNull: true,
+        type: Sequelize.STRING
+      },
+      reg_date: {
         allowNull: false,
-        type: Sequelize.FLOAT
+        type: Sequelize.DATE,
+        // defaultValue: Sequelize.literal('CURRENT_TIMESTAMP'),
+        defaultValue: new Date().getTime()
+      },
+      avatar: {
+        allowNull: true,
+        type: Sequelize.STRING,
+        defaultValue: "https://www.ddmcheb.cz/template/img/avatar.jpeg"
       },
       createdAt: {
         allowNull: false,
@@ -67,6 +65,7 @@ module.exports = {
     });
   },
   async down(queryInterface, Sequelize) {
-    await queryInterface.dropTable('Settings');
+    await queryInterface.dropTable('Users');
   }
 };
+//# sourceMappingURL=20240510114301-create-user.js.map

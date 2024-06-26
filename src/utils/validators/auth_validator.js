@@ -14,13 +14,11 @@ class AuthValidator {
      **/
     static signUpUserSchema = Joi.object({
         full_name: Joi.string().min(3).required(),
-        // username: Joi.string().required(),
         email: Joi.string().email(),
         phone_number: Joi.string(),
         account_status: Joi.string().valid(...status).default("pending"),
         country: Joi.string(),
         referred_by: Joi.string().allow("", null),
-        // reg_date: Joi.date(),
         avatar: Joi.string(),
         password: Joi.string().required()
             .pattern(new RegExp('^[a-zA-Z0-9@#$%&]{6,30}$'))
