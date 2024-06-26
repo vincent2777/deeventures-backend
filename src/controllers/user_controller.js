@@ -63,6 +63,8 @@ class UserController {
             }
             const { id } = user;
 
+            // console.log('id :::: ' + id)
+
 
             //  Create a Wallet and ReferralWallets.
             await Wallets.create({
@@ -77,10 +79,10 @@ class UserController {
             });
 
             // Update the referrer's wallet with ₦50 bonus.
-            const { amount: prevAmount } = await ReferralWallets.findOne({
-                where: { user_id: value.referred_by },
-            });
-            await ReferralWallets.update({ amount: prevAmount + 50 }, { where: { user_id: value.referred_by } });
+            // const { amount: prevAmount } = await ReferralWallets.findOne({
+            //     where: { user_id: value.referred_by },
+            // });
+            // await ReferralWallets.update({ amount: prevAmount + 50 }, { where: { user_id: value.referred_by } });
 
             // TODO
             // You can notify the referrer about the added referrer's bonus

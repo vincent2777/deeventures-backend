@@ -60,4 +60,11 @@ billPaymentRouter.post(
     BillPaymentController.buyElectricity
 );
 
+//  Get validate meter number.
+billPaymentRouter.get(
+    "/validate_meter_no",
+    TokenValidation.userTokenValidation,
+    BillPaymentController.validateMeterNo
+);
+
 export default billPaymentRouter;
