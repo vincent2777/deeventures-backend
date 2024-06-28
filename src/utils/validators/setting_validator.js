@@ -14,7 +14,7 @@ class SettingsValidator {
         kyclevel1_max_withdrawal: Joi.number(),
         kyclevel2_max_withdrawal: Joi.number(),
         kyclevel3_max_withdrawal: Joi.number(),
-        referral_commission: Joi.number(),
+        referral_commision: Joi.number(),
         account_bank: Joi.string(),
         account_number: Joi.number(),
         deposit_instructions: Joi.string(),

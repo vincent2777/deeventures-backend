@@ -115,7 +115,18 @@ class ElectricController {
      **/
     static getElectricCompanies = async (req, res) => {
         try {
-            const electricCompanies = await ElectricBills.findAll();
+            const allCompanies = await ElectricBills.findAll();
+            const companiesData = Object.values(allCompanies).flat();
+            let electricCompanies = [];
+
+            // Extract Electric companies
+            Object.keys(companiesData).forEach(electricCompanyKey => {
+                electricCompanies.push({
+                    "code": companiesData[electricCompanyKey]["provider_id"],
+                    "name": companiesData[electricCompanyKey]["bill_provider"]
+                });
+            });
+
             if (!electricCompanies.length) {
                 const response = new Response(
                     false,

@@ -7,7 +7,7 @@ import BillPaymentValidator from "../utils/validators/billPayment_validator";
 import axios from "axios";
 import getCurrentDateTime from "../utils/datetime";
 
-const { Wallets, Transactions, CableTVs, CableTVPackages, Users } = models;
+const { Wallets, Transactions, CableTVs, CableTVPackages, Users,ElectricCompany } = models;
 
 /**
  * @class BillPaymentController
@@ -92,24 +92,26 @@ class BillPaymentController {
             const { electricCompaniesURL } = req.body;
             // console.log("REQUEST BODY::: ", electricCompaniesURL);
 
-            const electricCompaniesResponse = await axios.get(electricCompaniesURL);
-            const electricCompaniesData = electricCompaniesResponse.data["ELECTRIC_COMPANY"];
+            // const electricCompaniesResponse = await axios.get(electricCompaniesURL);
+            // const electricCompaniesData = electricCompaniesResponse.data["ELECTRIC_COMPANY"];
 
-            const companiesData = Object.values(electricCompaniesData).flat();
+            // const companiesData = Object.values(electricCompaniesData).flat();
             let electricCompanies = [];
 
+            // const eCompanies = await ElectricCompany.findAll();
+
             // Extract Electric companies
-            Object.keys(companiesData).forEach(electricCompanyKey => {
-                electricCompanies.push({
-                    "code": companiesData[electricCompanyKey]["ID"],
-                    "name": companiesData[electricCompanyKey]["NAME"]
-                });
-            });
+            // Object.keys(companiesData).forEach(electricCompanyKey => {
+                // electricCompanies.push({
+                //     "code": companiesData[electricCompanyKey]["ID"],
+                //     "name": companiesData[electricCompanyKey]["NAME"]
+                // });
+            // });
 
             const response = new Response(
                 true,
                 200,
-                "Cable TV retrieved successfully",
+                "Electic Companies retrieved successfully",
                 { electricCompanies }
             );
             return res.status(response.code).json(response);

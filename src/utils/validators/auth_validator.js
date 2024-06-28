@@ -16,7 +16,7 @@ class AuthValidator {
         full_name: Joi.string().min(3).required(),
         email: Joi.string().email(),
         phone_number: Joi.string(),
-        account_status: Joi.string().valid(...status).default("pending"),
+        account_status: Joi.string().valid(...status).default("active"),
         country: Joi.string(),
         referred_by: Joi.string().allow("", null),
         avatar: Joi.string(),

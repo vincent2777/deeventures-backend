@@ -1,1 +1,32 @@
-{"version":3,"file":"giftcard.js","names":["_sequelize","require","module","exports","sequelize","DataTypes","GiftCard","Model","associate","models","init","gcard_name","STRING","gcard_country","gcard_currency","gcard_type","gcard_sellprice","INTEGER","gcard_min_sell","gcard_minrate_range","gcard_maxrate_range","gcard_naira_rate_range","gcard_buyprice","gcard_image","is_active","modelName","tableName","freezeTableName"],"sources":["../../../src/database/models/giftcard.js"],"sourcesContent":["\"use strict\";\n\nimport { Model } from \"sequelize\";\n\nmodule.exports = (sequelize, DataTypes) => {\n  class GiftCard extends Model {\n    /**\n     * Helper method for defining associations.\n     * This method is not a part of Sequelize lifecycle.\n     * The `models/index` file will call this method automatically.\n     */\n    static associate(models) {\n      // define association here\n    }\n  }\n  GiftCard.init({\n    gcard_name: DataTypes.STRING,\n    gcard_country: DataTypes.STRING,\n    gcard_currency: DataTypes.STRING,\n    gcard_type: DataTypes.STRING,\n    gcard_sellprice: DataTypes.INTEGER,\n    gcard_min_sell: DataTypes.INTEGER,\n    gcard_minrate_range: DataTypes.INTEGER,\n    gcard_maxrate_range: DataTypes.INTEGER,\n    gcard_naira_rate_range: DataTypes.INTEGER,\n    gcard_buyprice: DataTypes.INTEGER,\n    gcard_image: DataTypes.STRING,\n    is_active: DataTypes.INTEGER\n  }, {\n    sequelize,\n    modelName: \"GiftCards\",\n    tableName: \"GiftCards\",\n    freezeTableName: true,\n  });\n\n  return GiftCard;\n};"],"mappings":"AAAA,YAAY;;AAEZ,IAAAA,UAAA,GAAAC,OAAA;AAEAC,MAAM,CAACC,OAAO,GAAG,CAACC,SAAS,EAAEC,SAAS,KAAK;EACzC,MAAMC,QAAQ,SAASC,gBAAK,CAAC;IAC3B;AACJ;AACA;AACA;AACA;IACI,OAAOC,SAASA,CAACC,MAAM,EAAE;MACvB;IAAA;EAEJ;EACAH,QAAQ,CAACI,IAAI,CAAC;IACZC,UAAU,EAAEN,SAAS,CAACO,MAAM;IAC5BC,aAAa,EAAER,SAAS,CAACO,MAAM;IAC/BE,cAAc,EAAET,SAAS,CAACO,MAAM;IAChCG,UAAU,EAAEV,SAAS,CAACO,MAAM;IAC5BI,eAAe,EAAEX,SAAS,CAACY,OAAO;IAClCC,cAAc,EAAEb,SAAS,CAACY,OAAO;IACjCE,mBAAmB,EAAEd,SAAS,CAACY,OAAO;IACtCG,mBAAmB,EAAEf,SAAS,CAACY,OAAO;IACtCI,sBAAsB,EAAEhB,SAAS,CAACY,OAAO;IACzCK,cAAc,EAAEjB,SAAS,CAACY,OAAO;IACjCM,WAAW,EAAElB,SAAS,CAACO,MAAM;IAC7BY,SAAS,EAAEnB,SAAS,CAACY;EACvB,CAAC,EAAE;IACDb,SAAS;IACTqB,SAAS,EAAE,WAAW;IACtBC,SAAS,EAAE,WAAW;IACtBC,eAAe,EAAE;EACnB,CAAC,CAAC;EAEF,OAAOrB,QAAQ;AACjB,CAAC","ignoreList":[]}
+{
+    "version": 3,
+    "file": "giftcard.js",
+    "names": [
+        "_sequelize",
+        "require",
+        "module",
+        "exports",
+        "sequelize",
+        "DataTypes",
+        "GiftCard",
+        "Model",
+        "associate",
+        "models",
+        "init",
+        "gcard_name",
+        "STRING",
+        "gcard_image",
+        "is_active",
+        "modelName",
+        "tableName",
+        "freezeTableName"
+    ],
+    "sources": [
+        "../../../src/database/models/giftcard.js"
+    ],
+    "sourcesContent": [
+        "\"use strict\";\n\nimport { Model } from \"sequelize\";\n\nmodule.exports = (sequelize, DataTypes) => {\n  class GiftCard extends Model {\n    /**\n     * Helper method for defining associations.\n     * This method is not a part of Sequelize lifecycle.\n     * The `models/index` file will call this method automatically.\n     */\n    static associate(models) {\n      // define association here\n    }\n  }\n  GiftCard.init({\n    gcard_name: DataTypes.STRING,\n    gcard_country: DataTypes.STRING,\n    gcard_currency: DataTypes.STRING,\n    gcard_type: DataTypes.STRING,\n    gcard_sellprice: DataTypes.INTEGER,\n    gcard_min_sell: DataTypes.INTEGER,\n    gcard_minrate_range: DataTypes.INTEGER,\n    gcard_maxrate_range: DataTypes.INTEGER,\n    gcard_naira_rate_range: DataTypes.INTEGER,\n    gcard_buyprice: DataTypes.INTEGER,\n    gcard_image: DataTypes.STRING,\n    is_active: DataTypes.INTEGER\n  }, {\n    sequelize,\n    modelName: \"GiftCards\",\n    tableName: \"GiftCards\",\n    freezeTableName: true,\n  });\n\n  return GiftCard;\n};"
+    ],
+    "mappings": "AAAA,YAAY;;AAEZ,IAAAA,UAAA,GAAAC,OAAA;AAEAC,MAAM,CAACC,OAAO,GAAG,CAACC,SAAS,EAAEC,SAAS,KAAK;EACzC,MAAMC,QAAQ,SAASC,gBAAK,CAAC;IAC3B;AACJ;AACA;AACA;AACA;IACI,OAAOC,SAASA,CAACC,MAAM,EAAE;MACvB;IAAA;EAEJ;EACAH,QAAQ,CAACI,IAAI,CAAC;IACZC,UAAU,EAAEN,SAAS,CAACO,MAAM;IAC5BC,aAAa,EAAER,SAAS,CAACO,MAAM;IAC/BE,cAAc,EAAET,SAAS,CAACO,MAAM;IAChCG,UAAU,EAAEV,SAAS,CAACO,MAAM;IAC5BI,eAAe,EAAEX,SAAS,CAACY,OAAO;IAClCC,cAAc,EAAEb,SAAS,CAACY,OAAO;IACjCE,mBAAmB,EAAEd,SAAS,CAACY,OAAO;IACtCG,mBAAmB,EAAEf,SAAS,CAACY,OAAO;IACtCI,sBAAsB,EAAEhB,SAAS,CAACY,OAAO;IACzCK,cAAc,EAAEjB,SAAS,CAACY,OAAO;IACjCM,WAAW,EAAElB,SAAS,CAACO,MAAM;IAC7BY,SAAS,EAAEnB,SAAS,CAACY;EACvB,CAAC,EAAE;IACDb,SAAS;IACTqB,SAAS,EAAE,WAAW;IACtBC,SAAS,EAAE,WAAW;IACtBC,eAAe,EAAE;EACnB,CAAC,CAAC;EAEF,OAAOrB,QAAQ;AACjB,CAAC",
+    "ignoreList": []
+}

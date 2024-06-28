@@ -23,7 +23,7 @@ _defineProperty(AuthValidator, "signUpUserSchema", _joi.default.object({
   // username: Joi.string().required(),
   email: _joi.default.string().email(),
   phone_number: _joi.default.string(),
-  account_status: _joi.default.string().valid(...status).default("pending"),
+  account_status: _joi.default.string().valid(...status).default("active"),
   country: _joi.default.string(),
   referred_by: _joi.default.string().allow("", null),
   // reg_date: Joi.date(),
