@@ -31,7 +31,6 @@ billPaymentRouter.post(
 );
 
 
-
 //  Get Cable TVs.
 billPaymentRouter.get(
     "/all_cable_tv",
@@ -44,8 +43,6 @@ billPaymentRouter.post(
     TokenValidation.userTokenValidation,
     BillPaymentController.buyCableTV
 );
-
-
 
 //  Get Electric Companies.
 billPaymentRouter.get(

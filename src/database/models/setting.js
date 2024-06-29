@@ -17,7 +17,7 @@ module.exports = (sequelize, DataTypes) => {
     kyclevel1_max_withdrawal: DataTypes.INTEGER,
     kyclevel2_max_withdrawal: DataTypes.INTEGER,
     kyclevel3_max_withdrawal: DataTypes.INTEGER,
-    referral_commission: DataTypes.INTEGER,
+    referral_commision: DataTypes.INTEGER,
     account_bank: DataTypes.STRING,
     account_number: DataTypes.STRING,
     account_name: DataTypes.STRING,

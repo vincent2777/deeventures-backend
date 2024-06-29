@@ -14,42 +14,6 @@ module.exports = {
         allowNull: false,
         type: Sequelize.STRING
       },
-      gcard_country: {
-        allowNull: false,
-        type: Sequelize.STRING
-      },
-      gcard_currency: {
-        allowNull: false,
-        type: Sequelize.STRING
-      },
-      gcard_type: {
-        allowNull: false,
-        type: Sequelize.STRING
-      },
-      gcard_sellprice: {
-        allowNull: false,
-        type: Sequelize.INTEGER
-      },
-      gcard_min_sell: {
-        allowNull: false,
-        type: Sequelize.INTEGER
-      },
-      gcard_minrate_range: {
-        allowNull: false,
-        type: Sequelize.INTEGER
-      },
-      gcard_maxrate_range: {
-        allowNull: false,
-        type: Sequelize.INTEGER
-      },
-      gcard_naira_rate_range: {
-        allowNull: false,
-        type: Sequelize.INTEGER
-      },
-      gcard_buyprice: {
-        allowNull: false,
-        type: Sequelize.INTEGER
-      },
       gcard_image: {
         allowNull: false,
         type: Sequelize.STRING

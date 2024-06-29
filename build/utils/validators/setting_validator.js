@@ -20,7 +20,7 @@ _defineProperty(SettingsValidator, "updateSettingsSchema", _joi.default.object({
   kyclevel1_max_withdrawal: _joi.default.number(),
   kyclevel2_max_withdrawal: _joi.default.number(),
   kyclevel3_max_withdrawal: _joi.default.number(),
-  referral_commission: _joi.default.number(),
+  referral_commision: _joi.default.number(),
   account_bank: _joi.default.string(),
   account_number: _joi.default.number(),
   deposit_instructions: _joi.default.string(),

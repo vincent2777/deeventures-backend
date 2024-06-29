@@ -5,7 +5,7 @@ const path = require('path');
 const Sequelize = require('sequelize');
 const process = require('process');
 const basename = path.basename(__filename);
-const env = process.env.NODE_ENV || 'development';
+const env = process.env.APP_NODE_ENV || 'development';
 const config = require(__dirname + '/../../config/dbConfig.js')[env];
 const db = {};*/
 var _fs = _interopRequireDefault(require("fs"));
@@ -14,7 +14,7 @@ var _sequelize = _interopRequireDefault(require("sequelize"));
 var _dbConfig = _interopRequireDefault(require("../../config/dbConfig"));
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 const basename = _path.default.basename(__filename);
-const env = process.env.NODE_ENV || "development";
+const env = process.env.APP_NODE_ENV || "development";
 const config = _dbConfig.default[env];
 const db = {};
 let sequelize;

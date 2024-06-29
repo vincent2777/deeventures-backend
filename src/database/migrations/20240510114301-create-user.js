@@ -33,7 +33,7 @@ module.exports = {
       account_status: {
         allowNull: false,
         type: Sequelize.ENUM("active", "pending"),
-        defaultValue: "pending"
+        defaultValue: "active"
       },
       country: {
         allowNull: true,
