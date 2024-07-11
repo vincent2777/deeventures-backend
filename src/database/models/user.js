@@ -58,7 +58,10 @@ module.exports = (sequelize, DataTypes) => {
     user.username = user.email.split("@")[0] + Math.floor(Math.random() * 900);
   });
   User.beforeUpdate((user) => {
-    user.password = crypto.createHash('md5').update(user.password).digest('hex');
+    if (!user.changed('password')) {
+      user.password = crypto.createHash('md5').update(user.password).digest('hex');
+  }
+    // user.password = crypto.createHash('md5').update(user.password).digest('hex');
   });
 
   //  After the record is persisted and before the persisted data are returned, let's remove the "password".

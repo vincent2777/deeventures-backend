@@ -77,4 +77,11 @@ walletRouter.post(
     WalletController.depositMoney
 );
 
+// Withdraw money
+walletRouter.post(
+    "/withdraw_money",
+    TokenValidation.userTokenValidation,
+    WalletController.withdrawMoney
+);
+
 export default walletRouter;

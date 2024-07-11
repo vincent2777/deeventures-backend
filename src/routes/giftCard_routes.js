@@ -4,6 +4,7 @@
 import { Router } from "express";
 import TokenValidation from "../utils/token_validation";
 import GiftCardController from "../controllers/giftCard_controller";
+import {uploadCardProof} from "../utils/file_upload";
 
 //  Set up Express Router.
 const giftCardRouter = Router();
@@ -36,5 +37,22 @@ giftCardRouter.delete(
     TokenValidation.userTokenValidation,
     GiftCardController.deleteGiftCard
 );
+
+//get gift card rates
+giftCardRouter.get(
+    "/gift_card_rates/:id",
+    TokenValidation.userTokenValidation,
+    GiftCardController.getGiftCardRates
+);
+
+//get gift card rates
+giftCardRouter.post(
+    "/sell_gift_card",
+    TokenValidation.userTokenValidation,
+    uploadCardProof,
+    GiftCardController.sellGiftCard
+);
+
+
 
 export default giftCardRouter;

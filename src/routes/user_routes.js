@@ -47,4 +47,16 @@ userRouter.get(
     UsersController.getTopTraders
 );
 
+//Update user password
+userRouter.post(
+    "/update_password/:id",
+    UsersController.updateUserPassword
+);
+
+//Delete user
+userRouter.delete(
+    "/delete_user/:id",
+    UsersController.deleteUser
+);
+
 export default userRouter;
