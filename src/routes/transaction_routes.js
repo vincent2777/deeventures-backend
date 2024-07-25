@@ -3,7 +3,7 @@
 import { Router } from "express";
 import TransactionController from "../controllers/transaction_controller";
 import TokenValidation from "../utils/token_validation";
-import uploadTransactionProof from "../utils/file_upload";
+import {uploadTransactionProof} from "../utils/file_upload";
 
 //  Set up Express Router.
 const transactionRouter = Router();

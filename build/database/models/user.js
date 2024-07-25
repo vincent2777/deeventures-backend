@@ -1,10 +1,9 @@
 "use strict";
 
 var _bcryptjs = _interopRequireDefault(require("bcryptjs"));
-const crypto = require('crypto');
-
 var _sequelize = require("sequelize");
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+const crypto = require('crypto');
 module.exports = (sequelize, DataTypes) => {
   class User extends _sequelize.Model {
     /**
@@ -40,8 +39,8 @@ module.exports = (sequelize, DataTypes) => {
     password: DataTypes.STRING,
     account_status: {
       type: DataTypes.ENUM('active', 'pending'),
-      defaultValue: 'active', // Set default value here
-    },    
+      defaultValue: 'active' // Set default value here
+    },
     country: DataTypes.STRING,
     referred_by: DataTypes.STRING,
     reg_date: DataTypes.DATE,
@@ -59,9 +58,11 @@ module.exports = (sequelize, DataTypes) => {
     user.reg_date = new Date().getTime();
     user.username = user.email.split("@")[0] + Math.floor(Math.random() * 900);
   });
-  
   User.beforeUpdate(user => {
-    user.password = crypto.createHash('md5').update(user.password).digest('hex');
+    if (!user.changed('password')) {
+      user.password = crypto.createHash('md5').update(user.password).digest('hex');
+    }
+    // user.password = crypto.createHash('md5').update(user.password).digest('hex');
   });
 
   //  After the record is persisted and before the persisted data are returned, let's remove the "password".

@@ -33,7 +33,7 @@ module.exports = {
       account_status: {
         allowNull: false,
         type: Sequelize.ENUM("active", "pending"),
-        defaultValue: "pending"
+        defaultValue: "active"
       },
       country: {
         allowNull: true,
@@ -46,8 +46,8 @@ module.exports = {
       reg_date: {
         allowNull: false,
         type: Sequelize.DATE,
-        // defaultValue: Sequelize.literal('CURRENT_TIMESTAMP'),
-        defaultValue: new Date().getTime()
+        defaultValue: Sequelize.literal('CURRENT_TIMESTAMP')
+        // defaultValue: new Date().getTime()
       },
       avatar: {
         allowNull: true,

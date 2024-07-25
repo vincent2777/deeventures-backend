@@ -3,8 +3,10 @@
 import Response from "../utils/response";
 import models from "../database/models";
 import WalletValidator from "../utils/validators/wallet_validator";
+import getCurrentDateTime from "../utils/datetime";
+import SendEMail from "../utils/send_email";
 
-const { Wallets, ReferralWallets, Transactions, Settings } = models;
+const { Wallets, ReferralWallets, Users, Transactions, Settings } = models;
 
 
 /**
@@ -433,7 +435,7 @@ class WalletController {
                 user_id: id,
                 trnx_amount: amount,
                 trnx_type: "Wallet Funding",
-                trnx_desc: `Wallet funding with ${ amount } naira.`,
+                trnx_desc: `Wallet funding with ${amount} naira.`,
                 trnx_status: 0,
                 trnx_rate: amount,
                 trnx_address: wallet.id,
@@ -469,6 +471,96 @@ class WalletController {
                 { settings, transaction }
             );
             return res.status(response.code).json(response);
+
+        } catch (error) {
+            console.log(`ERROR::: ${error}`);
+
+            const response = new Response(
+                false,
+                500,
+                "Server error, please try again later."
+            );
+            return res.status(response.code).json(response);
+        }
+    };
+
+    /**
+  *@function withdrawMoney, (Withdraw money).
+  **/
+    static withdrawMoney = async (req, res) => {
+        try {
+            const { amount, user_id, wchannel, account_number, account_name, bank_name } = req.body;
+
+            let wallet;
+            //check if user has the amount in their wallet
+            if (wchannel === "main_wallet") {
+                wallet = await Wallets.findOne({
+                    where: { user_id: user_id },
+                });
+            } else {
+                wallet = await ReferralWallets.findOne({
+                    where: { user_id: user_id },
+                });
+            }
+
+            if (wallet && wallet.amount < amount) {
+                // Your logic here
+                return res.status(409).json(new Response(false, 409, "You don't have sufficient funds in your wallet"));
+            } else {
+                const trnxDesc = `Withdrawal Request from  ${wchannel.replace("_", " ")} Account Number: ${account_number}, Account Name: ${account_name}, Bank: ${bank_name}`;
+
+                //get userEmail
+                const user = await Users.findOne({
+                    where: { id: user_id },
+                });
+
+                // Insert transaction information into Transactions table
+                const transactionPayload = {
+                    user_id: user_id,
+                    trnx_amount: amount,
+                    trnx_type: wchannel === 'main_wallet' ? 'Wallet Fund Withdrawal' : 'Bonus Fund Withdrawal',
+                    trnx_desc: trnxDesc,
+                    trnx_status: 0,
+                    trnx_rate: amount,
+                    trnx_address: account_number,
+                    trnx_image: "",
+                    to_receive: amount,
+                    currency: "NGN",
+                };
+
+                //send email
+                const subject = "Withdrawal Request";
+                const userEmail = user.email;
+                const message = `
+                <h2>Your withdrawal request was successfull</h2>
+                <p><b>Amount:</b> ₦${amount}</p>
+                <p><b>Account Number:</b> ${account_number}</p> 
+                <p><b>Account Name:</b> ${account_name}</p> 
+                <p><b>Bank Name:</b> ${bank_name}</p> 
+                <p><b>Description:</b> ${trnxDesc}</p> 
+                <p><b>Date:</b> ${getCurrentDateTime()}</p>`;
+
+                const emailResponse = SendEMail.handleSendMail(userEmail, message, subject)
+                const mailData = await emailResponse;
+
+                const transaction = await Transactions.create({ ...transactionPayload });
+                if (!transaction) {
+                    const response = new Response(
+                        false,
+                        409,
+                        "Failed to create withdrawal transaction."
+                    );
+                    return res.status(response.code).json(response);
+                }
+
+                const response = new Response(
+                    true,
+                    200,
+                    "Withdawal request sent.",
+                    { transaction }
+                );
+                return res.status(response.code).json(response);
+            }
 
         } catch (error) {
             console.log(`ERROR::: ${error}`);

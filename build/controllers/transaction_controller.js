@@ -78,11 +78,11 @@ _defineProperty(TransactionController, "getTransactions", async (req, res) => {
         case "coin_purchase":
           whereClause.trnx_type = "Coin Purchase";
           break;
-        case "coin_sale":
-          whereClause.trnx_type = "Coin Sale";
+        case "coin_sell":
+          whereClause.trnx_type = "Coin Sell";
           break;
-        case "gift_card_sale":
-          whereClause.trnx_type = "Gift Card Sale";
+        case "gift_card_sell":
+          whereClause.trnx_type = "Gift Card Sell";
           break;
         case "bill_payment":
           whereClause.trnx_type = "Bill Payment";
@@ -91,25 +91,29 @@ _defineProperty(TransactionController, "getTransactions", async (req, res) => {
           whereClause.trnx_type = "Wallet Funding";
           break;
         default:
-          whereClause.trnx_type = "";
+          whereClause.trnx_type = null;
       }
     }
     if (status) {
       // Filter by status if provided (excluding "All")
       whereClause.trnx_status = status;
     }
-    // console.log("WHERE CLAUSE::: ", whereClause);
+
+    // Clean up whereClause to remove null values
+    whereClause = Object.fromEntries(Object.entries(whereClause).filter(([_, v]) => v != null));
 
     // Pagination calculation
-    const offset = (page - 1) * limit;
+    const offset = (parseInt(page, 10) - 1) * parseInt(limit, 10);
     const transactions = await Transactions.findAll({
       where: whereClause,
       order: [[_sequelize.default.col("trnx_date"), "DESC"]],
-      limit,
-      offset
+      limit: parseInt(limit, 10),
+      offset: offset
     });
     if (!transactions.length) {
-      const response = new _response.default(false, 404, "No transaction found.");
+      const response = new _response.default(true, 200, "No transaction found.", {
+        transactions: []
+      });
       return res.status(response.code).json(response);
     }
     const response = new _response.default(true, 200, 'Transactions retrieved successfully.', {
@@ -230,7 +234,9 @@ _defineProperty(TransactionController, "uploadTransactionProof", async (req, res
       trnx_reference
     } = req.params;
     const filename = req.file.filename;
-    const imageURL = `http://${req.headers.host}/uploads/crypto_proofs/${filename}`;
+    const imageURL = `http://${req.headers.host}/deeventure-apis/uploads/crypto_proofs/${filename}`;
+
+    // const imageURL = `http://${req.headers.host}/uploads/crypto_proofs/${filename}`;
     // console.log("IMAGE FILE:::", req.file);
 
     //  Update the Transaction image.

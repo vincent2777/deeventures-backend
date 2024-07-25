@@ -33,5 +33,8 @@ walletRouter.put("/update_referral_wallet/:id", _token_validation.default.userTo
 
 // Deposit money
 walletRouter.post("/deposit_money/:id", _token_validation.default.userTokenValidation, _wallet_controller.default.depositMoney);
+
+// Withdraw money
+walletRouter.post("/withdraw_money", _token_validation.default.userTokenValidation, _wallet_controller.default.withdrawMoney);
 var _default = exports.default = walletRouter;
 //# sourceMappingURL=wallet_routes.js.map

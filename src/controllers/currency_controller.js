@@ -3,7 +3,7 @@
 import models from "../database/models";
 import Response from "../utils/response";
 import CurrencyValidator from "../utils/validators/currency_validator";
-import { Op } from "sequelize";
+import { Op, where } from "sequelize";
 
 const { Currencies, CurrencyNetworks } = models;
 
@@ -67,7 +67,11 @@ class CurrencyController {
      **/
     static getCurrencies = async (req, res) => {
         try {
-            const currencies = await Currencies.findAll();
+            const currencies = await Currencies.findAll({
+                where: {
+                    currency_is_active: 1
+                }
+            });
     
             // Log the retrieved currencies
             console.log('Currencies:', currencies);

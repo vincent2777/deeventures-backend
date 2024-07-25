@@ -7,6 +7,8 @@ exports.default = void 0;
 var _response = _interopRequireDefault(require("../utils/response"));
 var _models = _interopRequireDefault(require("../database/models"));
 var _wallet_validator = _interopRequireDefault(require("../utils/validators/wallet_validator"));
+var _datetime = _interopRequireDefault(require("../utils/datetime"));
+var _send_email = _interopRequireDefault(require("../utils/send_email"));
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 function _defineProperty(obj, key, value) { key = _toPropertyKey(key); if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 function _toPropertyKey(t) { var i = _toPrimitive(t, "string"); return "symbol" == typeof i ? i : i + ""; }
@@ -14,6 +16,7 @@ function _toPrimitive(t, r) { if ("object" != typeof t || !t) return t; var e = 
 const {
   Wallets,
   ReferralWallets,
+  Users,
   Transactions,
   Settings
 } = _models.default;
@@ -370,6 +373,92 @@ _defineProperty(WalletController, "depositMoney", async (req, res) => {
       transaction
     });
     return res.status(response.code).json(response);
+  } catch (error) {
+    console.log(`ERROR::: ${error}`);
+    const response = new _response.default(false, 500, "Server error, please try again later.");
+    return res.status(response.code).json(response);
+  }
+});
+/**
+*@function withdrawMoney, (Withdraw money).
+**/
+_defineProperty(WalletController, "withdrawMoney", async (req, res) => {
+  try {
+    const {
+      amount,
+      user_id,
+      wchannel,
+      account_number,
+      account_name,
+      bank_name
+    } = req.body;
+    let wallet;
+    //check if user has the amount in their wallet
+    if (wchannel === "main_wallet") {
+      wallet = await Wallets.findOne({
+        where: {
+          user_id: user_id
+        }
+      });
+    } else {
+      wallet = await ReferralWallets.findOne({
+        where: {
+          user_id: user_id
+        }
+      });
+    }
+    if (wallet && wallet.amount < amount) {
+      // Your logic here
+      return res.status(409).json(new _response.default(false, 409, "You don't have sufficient funds in your wallet"));
+    } else {
+      const trnxDesc = `Withdrawal Request from  ${wchannel.replace("_", " ")} Account Number: ${account_number}, Account Name: ${account_name}, Bank: ${bank_name}`;
+
+      //get userEmail
+      const user = await Users.findOne({
+        where: {
+          id: user_id
+        }
+      });
+
+      // Insert transaction information into Transactions table
+      const transactionPayload = {
+        user_id: user_id,
+        trnx_amount: amount,
+        trnx_type: wchannel === 'main_wallet' ? 'Wallet Fund Withdrawal' : 'Bonus Fund Withdrawal',
+        trnx_desc: trnxDesc,
+        trnx_status: 0,
+        trnx_rate: amount,
+        trnx_address: account_number,
+        trnx_image: "",
+        to_receive: amount,
+        currency: "NGN"
+      };
+
+      //send email
+      const subject = "Withdrawal Request";
+      const userEmail = user.email;
+      const message = `
+                <h2>Your withdrawal request was successfull</h2>
+                <p><b>Amount:</b> ₦${amount}</p>
+                <p><b>Account Number:</b> ${account_number}</p> 
+                <p><b>Account Name:</b> ${account_name}</p> 
+                <p><b>Bank Name:</b> ${bank_name}</p> 
+                <p><b>Description:</b> ${trnxDesc}</p> 
+                <p><b>Date:</b> ${(0, _datetime.default)()}</p>`;
+      const emailResponse = _send_email.default.handleSendMail(userEmail, message, subject);
+      const mailData = await emailResponse;
+      const transaction = await Transactions.create({
+        ...transactionPayload
+      });
+      if (!transaction) {
+        const response = new _response.default(false, 409, "Failed to create withdrawal transaction.");
+        return res.status(response.code).json(response);
+      }
+      const response = new _response.default(true, 200, "Withdawal request sent.", {
+        transaction
+      });
+      return res.status(response.code).json(response);
+    }
   } catch (error) {
     console.log(`ERROR::: ${error}`);
     const response = new _response.default(false, 500, "Server error, please try again later.");

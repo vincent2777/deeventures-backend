@@ -20,15 +20,13 @@ class AuthValidator {}
  **/
 _defineProperty(AuthValidator, "signUpUserSchema", _joi.default.object({
   full_name: _joi.default.string().min(3).required(),
-  // username: Joi.string().required(),
   email: _joi.default.string().email(),
   phone_number: _joi.default.string(),
   account_status: _joi.default.string().valid(...status).default("active"),
   country: _joi.default.string(),
   referred_by: _joi.default.string().allow("", null),
-  // reg_date: Joi.date(),
   avatar: _joi.default.string(),
-  password: _joi.default.string().required().pattern(new RegExp('^[a-zA-Z0-9@#$%&]{6,30}$')).error(new Error("Password must be at least 6 characters with alphanumeric and special characters."))
+  password: _joi.default.string().pattern(new RegExp('^[a-zA-Z0-9!@#$%^&*()_+\\-=\\[\\]{};:\'",.<>\\/?|]{6,30}$')).error(new Error("Password must be at least 6 characters long and can include alphanumeric and special characters."))
 }));
 /**
  * @function loginUserSchema
@@ -42,15 +40,15 @@ _defineProperty(AuthValidator, "loginUserSchema", _joi.default.object({
  **/
 _defineProperty(AuthValidator, "updateUserSchema", _joi.default.object({
   full_name: _joi.default.string().min(3),
-  // username: Joi.string(),
-  email: _joi.default.string().email(),
   phone_number: _joi.default.string(),
-  status: _joi.default.string().valid(...status),
-  country: _joi.default.string(),
-  referred_by: _joi.default.string(),
-  reg_date: _joi.default.date(),
-  avatar: _joi.default.string(),
-  password: _joi.default.string().pattern(new RegExp('^[a-zA-Z0-9]{6,30}$')).error(new Error("Password must be at least 6 characters and alphanumeric."))
+  country: _joi.default.string()
+}));
+/**
+* @function updateUserPasswordSchema
+**/
+_defineProperty(AuthValidator, "updateUserPasswordSchema", _joi.default.object({
+  old_password: _joi.default.string().pattern(new RegExp('^[a-zA-Z0-9!@#$%^&*()_+\\-=\\[\\]{};:\'",.<>\\/?|]{6,30}$')).error(new Error("Password must be at least 6 characters long and can include alphanumeric and special characters.")),
+  new_password: _joi.default.string().pattern(new RegExp('^[a-zA-Z0-9!@#$%^&*()_+\\-=\\[\\]{};:\'",.<>\\/?|]{6,30}$')).error(new Error("Password must be at least 6 characters long and can include alphanumeric and special characters."))
 }));
 var _default = exports.default = AuthValidator;
 //# sourceMappingURL=auth_validator.js.map

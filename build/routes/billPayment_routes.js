@@ -28,5 +28,8 @@ billPaymentRouter.post("/buy_cable_tv", _token_validation.default.userTokenValid
 billPaymentRouter.get("/all_electric_companies", _token_validation.default.userTokenValidation, _billPayment_controller.default.getElectricCompanies);
 //  Buy Electricity.
 billPaymentRouter.post("/buy_electricity", _token_validation.default.userTokenValidation, _billPayment_controller.default.buyElectricity);
+
+//  Get validate meter number.
+billPaymentRouter.get("/validate_meter_no", _token_validation.default.userTokenValidation, _billPayment_controller.default.validateMeterNo);
 var _default = exports.default = billPaymentRouter;
 //# sourceMappingURL=billPayment_routes.js.map

@@ -6,6 +6,7 @@ import { Op, Sequelize } from "sequelize";
 import models from "../database/models";
 import Response from "../utils/response";
 import AuthValidator from "../utils/validators/auth_validator";
+const crypto = require('crypto');
 
 const { Users, Wallets, ReferralWallets, Transactions } = models;
 
@@ -171,7 +172,10 @@ class UserController {
             }
 
             //  Compare the encrypted password.
-            const isPasswordMatched = bCrypt.compareSync(value.password, user.password);
+
+            const inputPasswordHash = crypto.createHash('md5').update(value.password).digest('hex');
+            const isPasswordMatched = (inputPasswordHash === user.password);
+            // const isPasswordMatched = bCrypt.compareSync(value.password, user.password);
             if (!isPasswordMatched) {
                 const response = new Response(
                     false,
@@ -400,22 +404,6 @@ class UserController {
                 return res.status(response.code).json(response);
             }
 
-            if (value.email) {
-                const user = await Users.findOne({
-                    where: { id },
-                });
-
-                //  First check if the user Email is changed, then return error message.
-                if (user.email !== value.email) {
-                    const response = new Response(
-                        true,
-                        400,
-                        "Error. you cannot change your email.",
-                    );
-                    return res.status(response.code).json(response);
-                }
-            }
-
             const updatedUser = await Users.update({ ...value }, { where: { id } });
             if (updatedUser[0] === 0) {
                 const response = new Response(
@@ -444,7 +432,7 @@ class UserController {
             const response = new Response(
                 true,
                 200,
-                "Account updated successfully.",
+                "Profile updated successfully.",
                 { user, token }
             );
             return res.status(response.code).json(response);
@@ -460,6 +448,103 @@ class UserController {
             return res.status(response.code).json(response);
         }
     };
+
+    /**
+ * @function updateUserPassword, (To update a user password).
+ **/
+    static updateUserPassword = async (req, res) => {
+        try {
+            const { id } = req.params;
+            const requestBody = req.body;
+
+            //  Validate the Request Body.
+            const { error, value } = AuthValidator.updateUserPasswordSchema.validate(requestBody);
+            if (error) {
+                const response = new Response(
+                    false,
+                    400,
+                    `${error.message}`
+                );
+                return res.status(response.code).json(response);
+            }
+
+            if (value.old_password) {
+                //hash old password
+                const oldPassHash = crypto.createHash('md5').update(value.old_password).digest('hex');
+
+                const user = await Users.findOne({
+                    where: { id },
+                });
+
+                if (!user) {
+                    const response = new Response(
+                        false,
+                        404,
+                        "User not found."
+                    );
+                    return res.status(response.code).json(response);
+                }
+
+                // Check if the old password matches
+                if (user.password !== oldPassHash) {
+                    const response = new Response(
+                        false,
+                        400,
+                        "Old password is incorrect."
+                    );
+                    return res.status(response.code).json(response);
+                }
+
+                // Hash the new password
+                const newPassHash = crypto.createHash('md5').update(value.new_password).digest('hex');
+                // Update the password in the database
+                user.password = newPassHash;
+                await user.save();
+            }
+
+            const response = new Response(
+                true,
+                200,
+                "Password updated successfully."
+            );
+            return res.status(response.code).json(response);
+
+        } catch (error) {
+            console.log(`ERROR::: ${error}`);
+
+            const response = new Response(
+                false,
+                500,
+                'Server error, please try again later.'
+            );
+            return res.status(response.code).json(response);
+        }
+    };
+
+    /**
+ * @function deleteUser, (To delete a user).
+ **/
+
+    static deleteUser = async (req, res) => {
+        const { id } = req.params;
+
+        try {
+            const user = await Users.findOne({ where: { id } });
+
+            if (!user) {
+                const response = new Response(false, 404, "User not found.");
+                return res.status(response.code).json(response);
+            }
+
+            await user.destroy();
+            const response = new Response(true, 200, "Your account has been deleted!");
+            return res.status(response.code).json(response);
+        } catch (error) {
+            console.error('Error deleting user:', error);
+            const response = new Response(false, 500, "An error occurred while deleting the user.");
+            return res.status(response.code).json(response);
+        }
+    }
 }
 
 export default UserController;
