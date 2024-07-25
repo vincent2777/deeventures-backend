@@ -14,6 +14,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 function _defineProperty(obj, key, value) { key = _toPropertyKey(key); if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 function _toPropertyKey(t) { var i = _toPrimitive(t, "string"); return "symbol" == typeof i ? i : i + ""; }
 function _toPrimitive(t, r) { if ("object" != typeof t || !t) return t; var e = t[Symbol.toPrimitive]; if (void 0 !== e) { var i = e.call(t, r || "default"); if ("object" != typeof i) return i; throw new TypeError("@@toPrimitive must return a primitive value."); } return ("string" === r ? String : Number)(t); }
+const crypto = require('crypto');
 const {
   Users,
   Wallets,
@@ -74,6 +75,8 @@ _defineProperty(UserController, "signUpUser", async (req, res) => {
       id
     } = user;
 
+    // console.log('id :::: ' + id)
+
     //  Create a Wallet and ReferralWallets.
     await Wallets.create({
       amount: 0.0,
@@ -87,20 +90,10 @@ _defineProperty(UserController, "signUpUser", async (req, res) => {
     });
 
     // Update the referrer's wallet with ₦50 bonus.
-    const {
-      amount: prevAmount
-    } = await ReferralWallets.findOne({
-      where: {
-        user_id: value.referred_by
-      }
-    });
-    await ReferralWallets.update({
-      amount: prevAmount + 50
-    }, {
-      where: {
-        user_id: value.referred_by
-      }
-    });
+    // const { amount: prevAmount } = await ReferralWallets.findOne({
+    //     where: { user_id: value.referred_by },
+    // });
+    // await ReferralWallets.update({ amount: prevAmount + 50 }, { where: { user_id: value.referred_by } });
 
     // TODO
     // You can notify the referrer about the added referrer's bonus
@@ -177,7 +170,10 @@ _defineProperty(UserController, "loginUser", async (req, res) => {
     }
 
     //  Compare the encrypted password.
-    const isPasswordMatched = _bcryptjs.default.compareSync(value.password, user.password);
+
+    const inputPasswordHash = crypto.createHash('md5').update(value.password).digest('hex');
+    const isPasswordMatched = inputPasswordHash === user.password;
+    // const isPasswordMatched = bCrypt.compareSync(value.password, user.password);
     if (!isPasswordMatched) {
       const response = new _response.default(false, 401, "Incorrect password. Please check your password and try again.");
       return res.status(response.code).json(response);
@@ -349,19 +345,6 @@ _defineProperty(UserController, "updateUser", async (req, res) => {
       const response = new _response.default(false, 400, `${error.message}`);
       return res.status(response.code).json(response);
     }
-    if (value.email) {
-      const user = await Users.findOne({
-        where: {
-          id
-        }
-      });
-
-      //  First check if the user Email is changed, then return error message.
-      if (user.email !== value.email) {
-        const response = new _response.default(true, 400, "Error. you cannot change your email.");
-        return res.status(response.code).json(response);
-      }
-    }
     const updatedUser = await Users.update({
       ...value
     }, {
@@ -398,7 +381,7 @@ _defineProperty(UserController, "updateUser", async (req, res) => {
       phone,
       role
     }, `${process.env.JWT_SECRET_KEY}`);
-    const response = new _response.default(true, 200, "Account updated successfully.", {
+    const response = new _response.default(true, 200, "Profile updated successfully.", {
       user,
       token
     });
@@ -406,6 +389,84 @@ _defineProperty(UserController, "updateUser", async (req, res) => {
   } catch (error) {
     console.log(`ERROR::: ${error}`);
     const response = new _response.default(false, 500, 'Server error, please try again later.');
+    return res.status(response.code).json(response);
+  }
+});
+/**
+* @function updateUserPassword, (To update a user password).
+**/
+_defineProperty(UserController, "updateUserPassword", async (req, res) => {
+  try {
+    const {
+      id
+    } = req.params;
+    const requestBody = req.body;
+
+    //  Validate the Request Body.
+    const {
+      error,
+      value
+    } = _auth_validator.default.updateUserPasswordSchema.validate(requestBody);
+    if (error) {
+      const response = new _response.default(false, 400, `${error.message}`);
+      return res.status(response.code).json(response);
+    }
+    if (value.old_password) {
+      //hash old password
+      const oldPassHash = crypto.createHash('md5').update(value.old_password).digest('hex');
+      const user = await Users.findOne({
+        where: {
+          id
+        }
+      });
+      if (!user) {
+        const response = new _response.default(false, 404, "User not found.");
+        return res.status(response.code).json(response);
+      }
+
+      // Check if the old password matches
+      if (user.password !== oldPassHash) {
+        const response = new _response.default(false, 400, "Old password is incorrect.");
+        return res.status(response.code).json(response);
+      }
+
+      // Hash the new password
+      const newPassHash = crypto.createHash('md5').update(value.new_password).digest('hex');
+      // Update the password in the database
+      user.password = newPassHash;
+      await user.save();
+    }
+    const response = new _response.default(true, 200, "Password updated successfully.");
+    return res.status(response.code).json(response);
+  } catch (error) {
+    console.log(`ERROR::: ${error}`);
+    const response = new _response.default(false, 500, 'Server error, please try again later.');
+    return res.status(response.code).json(response);
+  }
+});
+/**
+* @function deleteUser, (To delete a user).
+**/
+_defineProperty(UserController, "deleteUser", async (req, res) => {
+  const {
+    id
+  } = req.params;
+  try {
+    const user = await Users.findOne({
+      where: {
+        id
+      }
+    });
+    if (!user) {
+      const response = new _response.default(false, 404, "User not found.");
+      return res.status(response.code).json(response);
+    }
+    await user.destroy();
+    const response = new _response.default(true, 200, "Your account has been deleted!");
+    return res.status(response.code).json(response);
+  } catch (error) {
+    console.error('Error deleting user:', error);
+    const response = new _response.default(false, 500, "An error occurred while deleting the user.");
     return res.status(response.code).json(response);
   }
 });

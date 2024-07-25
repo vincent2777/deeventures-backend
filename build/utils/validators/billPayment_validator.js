@@ -28,7 +28,8 @@ _defineProperty(BillPaymentValidator, "buyDataBundleSchema", _joi.default.object
   mobileNetwork: _joi.default.string().required(),
   dataPlan: _joi.default.number().required(),
   mobileNumber: _joi.default.string().required(),
-  dataBundleAmount: _joi.default.number().required()
+  dataBundleAmount: _joi.default.number().required(),
+  totalAmt: _joi.default.number().required()
 }));
 /**
  * @function buyCableTVSchema
@@ -48,6 +49,7 @@ _defineProperty(BillPaymentValidator, "buyElectricitySchema", _joi.default.objec
   meterType: _joi.default.string().required(),
   meterNumber: _joi.default.string().required(),
   amount: _joi.default.number().required(),
+  totalAmt: _joi.default.number().required(),
   mobileNumber: _joi.default.string().required()
 }));
 var _default = exports.default = BillPaymentValidator;

@@ -6,8 +6,10 @@ Object.defineProperty(exports, "__esModule", {
 exports.default = void 0;
 var _models = _interopRequireDefault(require("../database/models"));
 var _response = _interopRequireDefault(require("../utils/response"));
+var _send_email = _interopRequireDefault(require("../utils/send_email"));
 var _billPayment_validator = _interopRequireDefault(require("../utils/validators/billPayment_validator"));
 var _axios = _interopRequireDefault(require("axios"));
+var _datetime = _interopRequireDefault(require("../utils/datetime"));
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 function _defineProperty(obj, key, value) { key = _toPropertyKey(key); if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 function _toPropertyKey(t) { var i = _toPrimitive(t, "string"); return "symbol" == typeof i ? i : i + ""; }
@@ -16,7 +18,9 @@ const {
   Wallets,
   Transactions,
   CableTVs,
-  CableTVPackages
+  CableTVPackages,
+  Users,
+  ElectricCompany
 } = _models.default;
 
 /**
@@ -85,19 +89,23 @@ _defineProperty(BillPaymentController, "getElectricCompanies", async (req, res) 
     } = req.body;
     // console.log("REQUEST BODY::: ", electricCompaniesURL);
 
-    const electricCompaniesResponse = await _axios.default.get(electricCompaniesURL);
-    const electricCompaniesData = electricCompaniesResponse.data["ELECTRIC_COMPANY"];
-    const companiesData = Object.values(electricCompaniesData).flat();
+    // const electricCompaniesResponse = await axios.get(electricCompaniesURL);
+    // const electricCompaniesData = electricCompaniesResponse.data["ELECTRIC_COMPANY"];
+
+    // const companiesData = Object.values(electricCompaniesData).flat();
     let electricCompanies = [];
 
+    // const eCompanies = await ElectricCompany.findAll();
+
     // Extract Electric companies
-    Object.keys(companiesData).forEach(electricCompanyKey => {
-      electricCompanies.push({
-        "code": companiesData[electricCompanyKey]["ID"],
-        "name": companiesData[electricCompanyKey]["NAME"]
-      });
-    });
-    const response = new _response.default(true, 200, "Cable TV retrieved successfully", {
+    // Object.keys(companiesData).forEach(electricCompanyKey => {
+    // electricCompanies.push({
+    //     "code": companiesData[electricCompanyKey]["ID"],
+    //     "name": companiesData[electricCompanyKey]["NAME"]
+    // });
+    // });
+
+    const response = new _response.default(true, 200, "Electic Companies retrieved successfully", {
       electricCompanies
     });
     return res.status(response.code).json(response);
@@ -137,6 +145,13 @@ _defineProperty(BillPaymentController, "buyAirtime", async (req, res) => {
       mobileNumber,
       airtimeAmount
     } = value;
+
+    //get userEmail
+    const user = await Users.findOne({
+      where: {
+        id: id
+      }
+    });
 
     // Check user's wallet balance.
     const wallet = await Wallets.findOne({
@@ -180,13 +195,28 @@ _defineProperty(BillPaymentController, "buyAirtime", async (req, res) => {
         user_id: id
       }
     });
+    const orderType = initiatePaymentResponse.data.mobilenetwork;
+    const trnxDesc = `Buy ${orderType} airtime`;
+
+    //send email
+    const subject = "Airtime Purchase Successful";
+    const userEmail = user.email;
+    const message = `
+            <h2>Your mobile number has been topped up</h2>
+            <p><b>Amount:</b> ₦${airtimeAmount}</p>
+            <p><b>Mobile Number:</b> ${mobileNumber}</p> 
+            <p><b>Description:</b> ${trnxDesc}</p> 
+            <p><b>Date:</b> ${(0, _datetime.default)()}</p>`;
+    const emailResponse = _send_email.default.handleSendMail(userEmail, message, subject);
+    const mailData = await emailResponse;
+    // console.log("EMAIL RESPONSE::: ", mailData);
 
     // Insert transaction information into Transactions table
     const transaction = {
       user_id: id,
       trnx_amount: airtimeAmount,
       trnx_type: "Bill Payment",
-      trnx_desc: `${mobileNumber} was topped with ${airtimeAmount} credit unit.`,
+      trnx_desc: trnxDesc,
       trnx_status: 1,
       trnx_rate: airtimeAmount,
       trnx_address: mobileNumber,
@@ -233,9 +263,16 @@ _defineProperty(BillPaymentController, "buyDataBundle", async (req, res) => {
       mobileNetwork,
       dataPlan,
       mobileNumber,
-      dataBundleAmount
+      dataBundleAmount,
+      totalAmt
     } = value;
 
+    //get userEmail
+    const user = await Users.findOne({
+      where: {
+        id: id
+      }
+    });
     // Check user's wallet balance.
     const wallet = await Wallets.findOne({
       where: {
@@ -278,15 +315,31 @@ _defineProperty(BillPaymentController, "buyDataBundle", async (req, res) => {
         user_id: id
       }
     });
+    const productName = initiatePaymentResponse.data.productname;
+    const orderType = initiatePaymentResponse.data.mobilenetwork;
+    const dataCommision = totalAmt - dataBundleAmount;
+    const trnxDesc = `Purchased ${orderType} - ${productName} Data @ ${dataCommision}% commission`;
+
+    //send email
+    const subject = "Data Purchase Successful";
+    const userEmail = user.email;
+    const message = `
+            <h2>Your mobile number has been topped up</h2>
+            <p><b>Amount:</b> ₦${totalAmt}</p>
+            <p><b>Mobile Number:</b> ${mobileNumber}</p> 
+            <p><b>Description:</b> ${trnxDesc}</p> 
+            <p><b>Date:</b> ${(0, _datetime.default)()}</p>`;
+    const emailResponse = _send_email.default.handleSendMail(userEmail, message, subject);
+    const mailData = await emailResponse;
 
     // Insert transaction information into Transactions table
     const transaction = {
       user_id: id,
-      trnx_amount: dataBundleAmount,
+      trnx_amount: totalAmt,
       trnx_type: "Bill Payment",
-      trnx_desc: `${mobileNumber} was topped with ${initiatePaymentResponse.data.productname} data unit.`,
+      trnx_desc: trnxDesc,
       trnx_status: 1,
-      trnx_rate: dataBundleAmount,
+      trnx_rate: totalAmt,
       trnx_address: mobileNumber,
       trnx_image: "",
       to_receive: initiatePaymentResponse.data.productname.split(" ")[0],
@@ -413,7 +466,6 @@ _defineProperty(BillPaymentController, "buyElectricity", async (req, res) => {
     const clubConnectAPIKey = process.env.CLUBCONNECT_API_KEY;
     const clubConnectUserID = process.env.CLUBCONNECT_USER_ID;
     const callBackURL = encodeURIComponent("http://localhost:5000/api/v1/bill_payment/buy_cable_tv");
-    console.log("REQUEST BODY::: ", requestBody);
 
     //  Validate the Request Body.
     const {
@@ -429,6 +481,7 @@ _defineProperty(BillPaymentController, "buyElectricity", async (req, res) => {
       meterType,
       meterNumber,
       amount,
+      totalAmt,
       mobileNumber
     } = value;
 
@@ -438,62 +491,143 @@ _defineProperty(BillPaymentController, "buyElectricity", async (req, res) => {
         user_id: id
       }
     });
+
+    //get userEmail
+    const user = await Users.findOne({
+      where: {
+        id: id
+      }
+    });
     if (!wallet) {
       const response = new _response.default(false, 404, "Wallet not found.");
       return res.status(response.code).json(response);
     }
-    if (wallet.amount < amount) {
+    if (wallet.amount < totalAmt) {
       const response = new _response.default(false, 300, "Insufficient wallet balance. Kindly top-up your wallet by selling crypto or gift card.");
       return res.status(response.code).json(response);
     }
 
     // Initiate and make payment for data.
     const initiatePaymentResponse = await _axios.default.post(`https://www.nellobytesystems.com/APIElectricityV1.asp?UserID=${clubConnectUserID}&APIKey=${clubConnectAPIKey}&ElectricCompany=${electricCompanyCode}&MeterType=${meterType}&MeterNo=${meterNumber}&Amount=${amount}&PhoneNo=${mobileNumber}&CallBackURL=${callBackURL}`);
+    console.log('initiatePaymentResponse:::', JSON.stringify(initiatePaymentResponse.data, null, 2));
+    const transactionId = initiatePaymentResponse.data.transactionid;
+    console.log('transactionId:::', transactionId);
     if (initiatePaymentResponse.data.status !== "ORDER_RECEIVED") {
       const response = new _response.default(false, 409, "Failed to initiate payment.");
       return res.status(response.code).json(response);
     }
 
-    // Confirm payment
-    const confirmedPaymentResponse = await _axios.default.post(`https://www.nellobytesystems.com/APIElectricityV1.asp?UserID=${clubConnectUserID}&APIKey=${clubConnectAPIKey}&OrderID=${initiatePaymentResponse.data.orderid}`);
-    if (confirmedPaymentResponse.data.status !== "ORDER_COMPLETED") {
-      const response = new _response.default(false, 409, "Failed to make payment. Please try again later.");
-      return res.status(response.code).json(response);
-    }
+    // Function to query payment status recursively until ORDER_COMPLETED
+    const checkPaymentStatus = async () => {
+      try {
+        const queryPaymentResponse = await _axios.default.get(`https://www.nellobytesystems.com/APIQueryV1.0.asp?UserID=${clubConnectUserID}&APIKey=${clubConnectAPIKey}&OrderID=${transactionId}`);
+        console.log('queryPaymentResponse:::', JSON.stringify(queryPaymentResponse.data, null, 2));
+        if (queryPaymentResponse.data.status === "ORDER_COMPLETED" && queryPaymentResponse.data.remark === "TRANSACTION SUCCESSFUL") {
+          // Deduct airtime amount from user's wallet
+          const prevWalletAmount = wallet.amount;
+          await Wallets.update({
+            amount: prevWalletAmount - totalAmt
+          }, {
+            where: {
+              user_id: id
+            }
+          });
+          const meterToken = queryPaymentResponse.data.metertoken;
+          const ordertype = queryPaymentResponse.data.ordertype;
+          const date = queryPaymentResponse.data.date;
+          const convenienceFee = totalAmt - amount;
+          const trnxDesc = `Buy ${electricName} for Meter No. (${meterNumber}) @ NGN ${convenienceFee} convenience fee. Meter Recharge Token: ${meterToken}`;
+          console.log("trnxDesc", trnxDesc);
 
-    // Deduct airtime amount from user's wallet
-    const prevWalletAmount = wallet.amount;
-    await Wallets.update({
-      amount: prevWalletAmount - amount
-    }, {
-      where: {
-        user_id: id
+          //send email
+          const subject = "Electricity Bill Subscription Successful";
+          const userEmail = user.email;
+          const message = `
+                        <h2>Your Electricity Bill Subscription was successful</h2>
+                        <p><b>Amount:</b> ₦${totalAmt}</p>
+                        <p><b>Mobile Number:</b> ${mobileNumber}</p> 
+                        <p><b>Provider:</b> ${ordertype}</p> 
+                        <p><b>Meter Number:</b> ${meterNumber}</p> 
+                        <p><b>Description:</b> ${trnxDesc}</p> 
+                        <p><b>Date:</b> ${date}</p>`;
+          const emailResponse = _send_email.default.handleSendMail(userEmail, message, subject);
+          console.log("EMAIL RESPONSE::: ", emailResponse.response);
+
+          // Insert transaction information into Transactions table
+          const transaction = {
+            user_id: id,
+            trnx_amount: amount,
+            trnx_type: "Bill Payment",
+            trnx_desc: trnxDesc,
+            trnx_status: 1,
+            trnx_rate: totalAmt,
+            trnx_address: meterNumber,
+            trnx_image: "",
+            to_receive: amount,
+            currency: "NGN"
+          };
+          await Transactions.create({
+            ...transaction
+          });
+          const response = new _response.default(true, 200, `Your electricity purchase of ${amount} on ${meterNumber} was successful.`, {
+            transaction
+          });
+          return res.status(response.code).json(response);
+        } else if (queryPaymentResponse.data.status === "ORDER_RECEIVED" || queryPaymentResponse.data.remark === "Network Unresponsive" || queryPaymentResponse.data.remark === "Network Unresponsive") {
+          // Check again after a delay (e.g., every 5 seconds)
+          setTimeout(checkPaymentStatus, 3000); // 5000 milliseconds = 5 seconds
+        } else {
+          const response = new _response.default(false, 409, "Failed to make payment. Please try again later.");
+          return res.status(response.code).json(response);
+        }
+      } catch (error) {
+        console.log(`ERROR querying payment status::: ${error}`);
+        const response = new _response.default(false, 500, 'Server error, please try again later.');
+        return res.status(response.code).json(response);
       }
-    });
-
-    // Insert transaction information into Transactions table
-    const transaction = {
-      user_id: id,
-      trnx_amount: amount,
-      trnx_type: "Bill Payment",
-      trnx_desc: `Electricity purchase of ${amount} on ${meterNumber}.`,
-      trnx_status: 1,
-      trnx_rate: amount,
-      trnx_address: meterNumber,
-      trnx_image: "",
-      to_receive: amount,
-      currency: "NGN"
     };
-    await Transactions.create({
-      ...transaction
-    });
-    const response = new _response.default(true, 200, `Your electricity purchase of ${amount} on ${meterNumber} was successful.`, {
-      transaction
-    });
-    return res.status(response.code).json(response);
+
+    // Start checking payment status
+    await checkPaymentStatus();
   } catch (error) {
     console.log(`ERROR::: ${error}`);
     const response = new _response.default(false, 500, 'Server error, please try again later.');
+    return res.status(response.code).json(response);
+  }
+});
+/**
+* @function validateMeterNO (To get a name tied to meter number).
+**/
+_defineProperty(BillPaymentController, "validateMeterNo", async (req, res) => {
+  try {
+    // Read and parse the raw POST data
+    const {
+      electric_company_code,
+      meter_no
+    } = req.query;
+    const clubConnectAPIKey = process.env.CLUBCONNECT_API_KEY;
+    const clubConnectUserID = process.env.CLUBCONNECT_USER_ID;
+    const url = `https://www.nellobytesystems.com/APIVerifyElectricityV1.asp?UserID=${clubConnectUserID}&APIKey=${clubConnectAPIKey}&ElectricCompany=${electric_company_code}&MeterNo=${meter_no}`;
+
+    // Make a request to the external API
+    const validatedDataResponse = await _axios.default.get(url);
+
+    // Extract only the data part of the response
+    const validatedData = validatedDataResponse.data;
+    // console.error(`DATA::: ${electric_company_code}`);
+    // console.error(`DATA::: ${meter_no} `);
+
+    if (validatedData.status === "INVALID_ElectricCompany" || validatedData.status === "INVALID_METERNO") {
+      const response = new _response.default(false, 409, "Failed to validate meter no. ERROR: " + validatedData.status);
+      return res.status(response.code).json(response);
+    }
+    const response = new _response.default(true, 200, "Meter Number Validated Successfully", {
+      validatedData
+    });
+    return res.status(response.code).json(response);
+  } catch (error) {
+    console.error(`ERROR::: ${error}`);
+    const response = new _response.default(false, 500, "Server error, please try again later.");
     return res.status(response.code).json(response);
   }
 });

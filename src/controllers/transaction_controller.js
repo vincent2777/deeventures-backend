@@ -80,11 +80,11 @@ class TransactionController {
                     case "coin_purchase":
                         whereClause.trnx_type = "Coin Purchase";
                         break;
-                    case "coin_sale":
-                        whereClause.trnx_type = "Coin Sale";
+                    case "coin_sell":
+                        whereClause.trnx_type = "Coin Sell";
                         break;
-                    case "gift_card_sale":
-                        whereClause.trnx_type = "Gift Card Sale";
+                    case "gift_card_sell":
+                        whereClause.trnx_type = "Gift Card Sell";
                         break;
                     case "bill_payment":
                         whereClause.trnx_type = "Bill Payment";
@@ -117,9 +117,10 @@ class TransactionController {
 
             if (!transactions.length) {
                 const response = new Response(
-                    false,
-                    404,
-                    "No transaction found."
+                    true,
+                    200,
+                    "No transaction found.",
+                    { transactions: [] } 
                 );
                 return res.status(response.code).json(response);
             }
@@ -290,7 +291,9 @@ class TransactionController {
         try {
             const { trnx_reference } = req.params;
             const filename = req.file.filename;
-            const imageURL = `http://${req.headers.host}/uploads/crypto_proofs/${filename}`;
+            const imageURL = `http://${req.headers.host}/deeventure-apis/uploads/crypto_proofs/${filename}`;
+
+            // const imageURL = `http://${req.headers.host}/uploads/crypto_proofs/${filename}`;
             // console.log("IMAGE FILE:::", req.file);
 
             //  Update the Transaction image.

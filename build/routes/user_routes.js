@@ -28,5 +28,11 @@ userRouter.put("/update_user/:id", _token_validation.default.userTokenValidation
 
 //  Get top ten traders.
 userRouter.get("/get_top_traders", _token_validation.default.userTokenValidation, _user_controller.default.getTopTraders);
+
+//Update user password
+userRouter.post("/update_password/:id", _user_controller.default.updateUserPassword);
+
+//Delete user
+userRouter.delete("/delete_user/:id", _user_controller.default.deleteUser);
 var _default = exports.default = userRouter;
 //# sourceMappingURL=user_routes.js.map

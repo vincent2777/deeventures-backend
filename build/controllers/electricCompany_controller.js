@@ -7,6 +7,7 @@ exports.default = void 0;
 var _models = _interopRequireDefault(require("../database/models"));
 var _response = _interopRequireDefault(require("../utils/response"));
 var _electricCompany_validator = _interopRequireDefault(require("../utils/validators/electricCompany_validator"));
+var _axios = _interopRequireDefault(require("axios"));
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 function _defineProperty(obj, key, value) { key = _toPropertyKey(key); if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 function _toPropertyKey(t) { var i = _toPrimitive(t, "string"); return "symbol" == typeof i ? i : i + ""; }
@@ -101,7 +102,17 @@ _defineProperty(ElectricController, "createMeterType", async (req, res) => {
  **/
 _defineProperty(ElectricController, "getElectricCompanies", async (req, res) => {
   try {
-    const electricCompanies = await ElectricBills.findAll();
+    const allCompanies = await ElectricBills.findAll();
+    const companiesData = Object.values(allCompanies).flat();
+    let electricCompanies = [];
+
+    // Extract Electric companies
+    Object.keys(companiesData).forEach(electricCompanyKey => {
+      electricCompanies.push({
+        "code": companiesData[electricCompanyKey]["provider_id"],
+        "name": companiesData[electricCompanyKey]["bill_provider"]
+      });
+    });
     if (!electricCompanies.length) {
       const response = new _response.default(false, 404, "No electric company found.");
       return res.status(response.code).json(response);
