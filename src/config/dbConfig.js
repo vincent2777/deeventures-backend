@@ -4,7 +4,7 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 module.exports = {
-  development: {
+  development: {    
     username: process.env.DEV_DB_USERNAME,
     password: process.env.DEV_DB_PASSWORD,
     database: process.env.DEV_DB_NAME,

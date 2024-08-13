@@ -8,7 +8,6 @@ import axios from "axios";
 import getCurrentDateTime from "../utils/datetime";
 
 const { Wallets, Transactions, CableTVs, CableTVPackages, Users,ElectricCompany } = models;
-
 /**
  * @class BillPaymentController
  **/
