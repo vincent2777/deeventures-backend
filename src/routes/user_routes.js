@@ -3,6 +3,9 @@
 import { Router } from 'express';
 import UsersController from "../controllers/user_controller";
 import TokenValidation from "../utils/token_validation";
+import {uploadProfileImage} from "../utils/file_upload";
+import TransactionController from "../controllers/transaction_controller";
+import transactionRouter from "./transaction_routes";
 
 //  Set up Express Router.
 const userRouter = Router();
@@ -17,6 +20,18 @@ userRouter.post(
 userRouter.post(
     "/login",
     UsersController.loginUser
+);
+
+//  Forgot Password.
+userRouter.post(
+    "/forgot_password",
+    UsersController.forgotUserPassword
+);
+
+//  Reset Password.
+userRouter.post(
+    "/reset_password",
+    UsersController.resetUserPassword
 );
 
 //  Get all Users.
@@ -57,6 +72,14 @@ userRouter.post(
 userRouter.delete(
     "/delete_user/:id",
     UsersController.deleteUser
+);
+
+//  Upload Profile Image.
+userRouter.post(
+    "/upload_profile_image/:id",
+    TokenValidation.userTokenValidation,
+    uploadProfileImage,
+    UsersController.uploadUserProfileImage
 );
 
 export default userRouter;

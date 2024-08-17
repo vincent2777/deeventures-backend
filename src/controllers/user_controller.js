@@ -7,8 +7,10 @@ import models from "../database/models";
 import Response from "../utils/response";
 import AuthValidator from "../utils/validators/auth_validator";
 const crypto = require('crypto');
+import otpGenerator from "otp-generator";
+import SendEMail from "../utils/send_email";
 
-const { Users, Wallets, ReferralWallets, Transactions } = models;
+const { Users, Wallets, ReferralWallets, Transactions, OTP } = models;
 
 /**
  * @class UserController
@@ -131,6 +133,7 @@ class UserController {
         try {
             const requestBody = req.body;
 
+
             //  Validate the Request Body.
             const { error, value } = AuthValidator.loginUserSchema.validate(requestBody);
             if (error) {
@@ -203,6 +206,140 @@ class UserController {
                     user: userDataValues,
                     token
                 }
+            );
+            return res.status(response.code).json(response);
+
+        } catch (error) {
+            console.log(`ERROR::: ${error}`);
+
+            const response = new Response(
+                false,
+                500,
+                'Server error, please try again later.'
+            );
+            return res.status(response.code).json(response);
+        }
+    };
+
+
+    /**
+     *@function forgotUserPassword, (To reset forgotten password).
+     **/
+    static forgotUserPassword = async (req, res) => {
+        try {
+            const requestBody = req.body;
+            // console.log("REQUEST BODY::: ", requestBody);
+
+            //  Validate the Request Body.
+            const { error, value } = AuthValidator.forgotUserPasswordSchema.validate(requestBody);
+            if (error) {
+                const response = new Response(
+                    false,
+                    400,
+                    `${error.message}`
+                );
+                return res.status(response.code).json(response);
+            }
+
+            // Generate a Six digits OTP.
+            const otp = otpGenerator.generate(6, {
+                digits: true,
+                lowerCaseAlphabets: false,
+                upperCaseAlphabets: false,
+                specialChars: false
+            });
+            console.log("GEN OTP::: ", otp);
+
+            const user = await Users.findOne({
+                where: { email: value.email },
+            });
+
+            //  Save OTP to the DB
+            await OTP.create({
+                otp,
+                user_id: user.id
+            });
+
+            const userName = user.username;
+            const subject = "Reset Password";
+
+            //  Send OTP to users mail.
+            const emailResponse = await SendEMail.sendForgotPasswordMail(value.email, userName, subject, otp);
+            console.log("EMAIL RESPONSE::: ", emailResponse.response);
+
+            const response = new Response(
+                true,
+                201,
+                "An OTP has been sent successfully to your email. Kindly check your email for your OTP.",
+            );
+            return res.status(response.code).json(response);
+
+        } catch (error) {
+            console.log(`ERROR::: ${error}`);
+
+            const response = new Response(
+                false,
+                500,
+                'Server error, please try again later.'
+            );
+            return res.status(response.code).json(response);
+        }
+    };
+
+    /**
+     * @function resetUserPassword, (To update a user password).
+     **/
+    static resetUserPassword = async (req, res) => {
+        try {
+            const requestBody = req.body;
+
+            //  Validate the Request Body.
+            const { error, value } = AuthValidator.resetUserPasswordSchema.validate(requestBody);
+            if (error) {
+                const response = new Response(
+                    false,
+                    400,
+                    `${error.message}`
+                );
+                return res.status(response.code).json(response);
+            }
+            const { otp } = value;
+
+            //  Find the OTP.
+            const foundOTP = await OTP.findOne({
+                where: { otp },
+            });
+            if (foundOTP === null) {
+                const response = new Response(
+                    false,
+                    400,
+                    "The OTP is invalid, kindly request for an OTP."
+                );
+                return res.status(response.code).json(response);
+            }
+            const { user_id } = foundOTP;
+
+            //  Hash the new password and update the User "password" property.
+            const hashedPassword = crypto.createHash('md5').update(value.password).digest('hex');
+            const updatedUser = await Users.update({ "password": hashedPassword }, { where: { id: user_id } });
+            if (updatedUser[0] === 0) {
+                const response = new Response(
+                    false,
+                    400,
+                    "Failed to reset password."
+                );
+                return res.status(response.code).json(response);
+            }
+
+            //  Delete the Users OTP.
+            await OTP.destroy({
+                where: { user_id }
+            });
+
+            const response = new Response(
+                true,
+                200,
+                "Password updated successfully. Kindly login with your new password",
             );
             return res.status(response.code).json(response);
 
@@ -449,9 +586,10 @@ class UserController {
         }
     };
 
+
     /**
- * @function updateUserPassword, (To update a user password).
- **/
+     * @function updateUserPassword, (To update a user password).
+     **/
     static updateUserPassword = async (req, res) => {
         try {
             const { id } = req.params;
@@ -524,7 +662,6 @@ class UserController {
     /**
  * @function deleteUser, (To delete a user).
  **/
-
     static deleteUser = async (req, res) => {
         const { id } = req.params;
 
@@ -545,6 +682,73 @@ class UserController {
             return res.status(response.code).json(response);
         }
     }
+
+
+    /**
+     * @function uploadUserProfileImage (Upload user profile image).
+     **/
+    static uploadUserProfileImage = async (req, res) => {
+        try {
+            const { id } = req.params;
+            const filename = req.file.filename;
+            const imageURL = `http://${req.headers.host}/uploads/profile_image/${filename}`;
+            // const imageURL = `http://${req.headers.host}/deeventure-apis/uploads/profile_image/${filename}`;
+            // console.log("IMAGE FILE:::", req.file);
+
+            //  Update the User profile image.
+            const updatedUser = await Users.update(
+                { avatar: imageURL },
+                { where: { id } }
+            );
+            if (updatedUser[0] === 0) {
+                const response = new Response(
+                    false,
+                    400,
+                    "Failed to update user profile image."
+                );
+                return res.status(response.code).json(response);
+            }
+
+            //  Get the updated user back.
+            const user = await Users.findByPk(id, {
+                attributes: {
+                    exclude: ["password"],
+                },
+                include: {
+                    model: Wallets,
+                    as: "wallet",
+                    attributes: ["id", "user_id", "amount", "currency_symbol"]
+                }
+            });
+            if (!user) {
+                const response = new Response(
+                    false,
+                    404,
+                    "User does not exist."
+                );
+                return res.status(response.code).json(response);
+            }
+
+
+            const response = new Response(
+                true,
+                200,
+                "Profile image updated successfully.",
+                { user }
+            );
+            return res.status(response.code).json(response);
+
+        } catch (error) {
+            console.log(`ERROR::: ${error}`);
+
+            const response = new Response(
+                false,
+                500,
+                'Server error, please try again later.'
+            );
+            return res.status(response.code).json(response);
+        }
+    };
 }
 
 export default UserController;

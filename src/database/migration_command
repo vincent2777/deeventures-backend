@@ -31,3 +31,5 @@ npx sequelize-cli model:generate --name ElectricBill --attributes bill_provider:
 npx sequelize-cli model:generate --name DataPlan --attributes network_id:string,data_plans_isp:string,data_plans_commission:float,data_plans_isp_image:string,is_active:integer
 
 npx sequelize-cli model:generate --name Setting --attributes kyclevel1_max_withdrawal:integer,kyclevel2_max_withdrawal:integer,kyclevel3_max_withdrawal:integer,referral_commision:integer,account_bank:string,account_number:string,deposit_instructions:string,min_withdrawal:float,clubkonect_api:text,clubkonect_userid:string,max_withdrawal:float
+
+npx sequelize-cli model:generate --name OTP --attributes otp:string,user_id:string

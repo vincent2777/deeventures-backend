@@ -1,8 +1,9 @@
-"use strict";
+'use strict';
 
-var _sequelize = require("sequelize");
+import { Model } from 'sequelize';
+
 module.exports = (sequelize, DataTypes) => {
-  class ElectricCompany extends _sequelize.Model {
+  class OTP extends Model {
     /**
      * Helper method for defining associations.
      * This method is not a part of Sequelize lifecycle.
@@ -12,16 +13,15 @@ module.exports = (sequelize, DataTypes) => {
       // define association here
     }
   }
-  ElectricCompany.init({
-    code: DataTypes.STRING,
-    name: DataTypes.STRING,
-    is_active: DataTypes.INTEGER
+  OTP.init({
+    otp: DataTypes.STRING,
+    user_id: DataTypes.STRING
   }, {
     sequelize,
-    modelName: "ElectricCompanies",
-    tableName: "ElectricCompanies",
+    modelName: 'OTP',
+    tableName: 'OTP',
     freezeTableName: true
   });
-  return ElectricCompany;
+
+  return OTP;
 };
-//# sourceMappingURL=electriccompany.js.map
