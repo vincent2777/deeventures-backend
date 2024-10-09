@@ -22,6 +22,7 @@ class AuthValidator {
         avatar: Joi.string(),
         password: Joi.string()
             .pattern(new RegExp('^[a-zA-Z0-9!@#$%^&*()_+\\-=\\[\\]{};:\'",.<>\\/?|]{6,30}$'))
+            .required()
             .error(new Error("Password must be at least 6 characters long and can include alphanumeric and special characters.")),
     });
 
@@ -32,6 +33,29 @@ class AuthValidator {
     static loginUserSchema = Joi.object({
         email: Joi.string().required().email(),
         password: Joi.string().required(),
+    });
+
+
+    /**
+     * @function forgotUserPasswordSchema
+     **/
+    static forgotUserPasswordSchema = Joi.object({
+        email: Joi.string().required().email(),
+    });
+
+    /**
+     * @function resetUserPasswordSchema
+     **/
+    static resetUserPasswordSchema = Joi.object({
+        otp: Joi.string().required(),
+        password: Joi.string()
+            .pattern(new RegExp('^[a-zA-Z0-9!@#$%^&*()_+\\-=\\[\\]{};:\'",.<>\\/?|]{6,30}$'))
+            .required()
+            .error(new Error("Password must be at least 6 characters long and can include alphanumeric and special characters.")),
+        confirm_password: Joi.string()
+            .valid(Joi.ref('password'))
+            .required()
+            .error(new Error("Confirm password must match the password.")),
     });
 
 

@@ -72,16 +72,23 @@ walletRouter.put(
 
 // Deposit money
 walletRouter.post(
-    "/deposit_money/:id",
+    "/deposit_money/:userID",
     TokenValidation.userTokenValidation,
     WalletController.depositMoney
 );
 
 // Withdraw money
 walletRouter.post(
-    "/withdraw_money",
+    "/withdraw_money/:userID",
     TokenValidation.userTokenValidation,
     WalletController.withdrawMoney
+);
+
+// Verify withdraw money
+walletRouter.post(
+    "/verify_withdraw_money/:userID",
+    TokenValidation.userTokenValidation,
+    WalletController.verifyWithdrawMoney
 );
 
 export default walletRouter;

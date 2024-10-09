@@ -1,27 +1,22 @@
-"use strict";
+'use strict';
 
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.createTable('Wallets', {
+    await queryInterface.createTable('OTP', {
       id: {
         allowNull: false,
         autoIncrement: true,
         primaryKey: true,
         type: Sequelize.INTEGER
       },
-      amount: {
+      otp: {
         allowNull: false,
-        type: Sequelize.DOUBLE
-      },
-      currency_symbol: {
-        allowNull: false,
-        type: Sequelize.STRING,
-        default: "$"
+        type: Sequelize.STRING
       },
       user_id: {
         allowNull: false,
-        type: Sequelize.INTEGER
+        type: Sequelize.STRING
       },
       createdAt: {
         allowNull: false,
@@ -34,7 +29,6 @@ module.exports = {
     });
   },
   async down(queryInterface, Sequelize) {
-    await queryInterface.dropTable('Wallets');
+    await queryInterface.dropTable('OTP');
   }
 };
-//# sourceMappingURL=20240518092910-create-wallet.js.map

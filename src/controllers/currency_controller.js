@@ -91,7 +91,7 @@ class CurrencyController {
     
             const currenciesWithNetworks = await Promise.all(currencies.map(async (eachCurrency) => {
                 // Log each currency to check its structure
-                console.log('Each Currency:', eachCurrency);
+                // console.log('Each Currency:', eachCurrency);
     
                 let currencyNetworkIds;
                 try {

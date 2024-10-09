@@ -45,6 +45,64 @@ class SendEMail {
         const emailResponse = await emailTransporter.sendMail(emailData);
         // console.log("EMAIL RESPONSE::: ", emailResponse);
         return await emailTransporter.sendMail(emailData);
+    };
+
+
+    static sendOTPMail = async (userEmail, userName, subject, otp, amount) => {
+
+        //  Creating a Transport
+        const emailTransporter = nodemailer.createTransport({
+                host: process.env.EMAIL_HOST,
+                port: process.env.EMAIL_PORT,
+                secure: false, // true for 465, false for other ports
+                auth: {
+                    user: process.env.EMAIL_USERNAME,
+                    pass: process.env.EMAIL_PASSWORD,
+                },
+                tls: {
+                    rejectUnauthorized: false
+                },
+            });
+
+        const emailData = {
+            from: process.env.EMAIL_SENDER,
+            to: userEmail,
+            subject: subject,
+            html: otpEmailBody(userName, otp, amount),
+        }
+
+        //  Send the Mail now with the "emailTransporter" created.
+        const emailResponse = await emailTransporter.sendMail(emailData);
+        return emailResponse;
+    }
+
+
+    static sendForgotPasswordMail = async (userEmail, userName, subject, otp) => {
+
+        //  Creating a Transport
+        const emailTransporter = nodemailer.createTransport({
+                host: process.env.EMAIL_HOST,
+                port: process.env.EMAIL_PORT,
+                secure: false, // true for 465, false for other ports
+                auth: {
+                    user: process.env.EMAIL_USERNAME,
+                    pass: process.env.EMAIL_PASSWORD,
+                },
+                tls: {
+                    rejectUnauthorized: false
+                },
+            });
+
+        const emailData = {
+            from: process.env.EMAIL_SENDER,
+            to: userEmail,
+            subject: subject,
+            html: forgotPasswordEmailBody(userName, subject, otp),
+        }
+
+        //  Send the Mail now with the "emailTransporter" created.
+        const emailResponse = await emailTransporter.sendMail(emailData);
+        return emailResponse;
     }
 }
 
@@ -426,6 +484,140 @@ const emailBody = (message) => {
     </html>`;
 
     return body;
+};
+
+const otpEmailBody = (userName, subject, otp, amount) => {
+    return `
+        <!DOCTYPE html>
+        <html lang="en">
+            <head>
+                <meta content="text/html; charset=utf-8" http-equiv="Content-Type" />
+                <meta content="width=device-width,initial-scale=1" name="viewport" />
+                <title>Withdrawal Request</title> 
+                <style>
+                    body {
+                        width: 100%;
+                    }
+                    .container {
+                        margin: 0 auto;
+                        width: 700px;
+                        background-color: #ffffff;
+                        color: dimgrey;
+                        border: 1px solid #cbcbcb;
+                        padding: 20px;
+                    }
+                    h2 {
+                        text-align: center;
+                    }
+                    .otp_text {
+                        color: black;
+                        font-size: 20px;
+                        font-weight: bold;
+                        text-align: center;
+                    }
+                    .text_decoration {
+                        text-decoration: none;
+                    }
+                </style>   
+            </head>
+            
+            <body>
+                <div class="container">
+                    <img src="https://deeventures.com.ng/images/deeventures_logo.png" 
+                        style="display: block; height: auto; border: 0; width: 120px; max-width: 100%;" 
+                        width="120"
+                    />
+                    
+                    <h2>${ subject }</h2>
+                    <p>
+                        Hi ${userName}, you requested to withdraw the sum of ₦${amount} from your deeventures wallet! <br />
+                        Use the following OTP to complete your transaction. Kindly know that this OTP is valid for 15 minutes.
+                    </p>
+                    
+                    <br />
+                    
+                    <h1 class="otp_text">${otp}</h1>
+                    
+                    <p>
+                        For more enquiry and assistance, kindly 
+                        <a href="mailto:info@deeventures.com" class="text_decoration">contact us<a/>.
+                    </p>
+                    <h3 style="margin: 0; color: #555555; direction: ltr; font-family: Cabin, Arial, Helvetica Neue, Helvetica, sans-serif; font-size: 16px; font-weight: 400; letter-spacing: normal; line-height: 120%; text-align: center; margin-top: 0; margin-bottom: 0;">
+                        <span
+                            id="5671ad78-f881-4153-b4e1-51e3092415cd">@2022
+                        </span>Deeventures LTD. All Rights Reserved<br />
+                    </h3>
+                <div>
+            </body>    
+        </html>   
+    `
+}
+
+const forgotPasswordEmailBody = (userName, subject, otp) => {
+    return `
+        <!DOCTYPE html>
+        <html lang="en">
+            <head>
+                <meta content="text/html; charset=utf-8" http-equiv="Content-Type" />
+                <meta content="width=device-width,initial-scale=1" name="viewport" />
+                <title>Withdrawal Request</title> 
+                <style>
+                    body {
+                        width: 100%;
+                    }
+                    .container {
+                        margin: 0 auto;
+                        width: 700px;
+                        background-color: #ffffff;
+                        color: dimgrey;
+                        border: 1px solid #cbcbcb;
+                        padding: 20px;
+                    }
+                    h2 {
+                        text-align: center;
+                    }
+                    .otp_text {
+                        color: black;
+                        font-size: 20px;
+                        font-weight: bold;
+                        text-align: center;
+                    }
+                    .text_decoration {
+                        text-decoration: none;
+                    }
+                </style>   
+            </head>
+            
+            <body>
+                <div class="container">
+                    <img src="https://deeventures.com.ng/images/deeventures_logo.png" 
+                        style="display: block; height: auto; border: 0; width: 120px; max-width: 100%;" 
+                        width="120"
+                    />
+                    
+                    <h2>${ subject }</h2>
+                    <p>
+                        Hi ${userName}, you requested to reset your password. <br />
+                        Use the OTP below to complete your request. Kindly know that this OTP is valid for 15 minutes.
+                    </p>
+                    
+                    <br />
+                    
+                    <h1 class="otp_text">${otp}</h1>
+                    
+                    <p>
+                        For more enquiry and assistance, kindly 
+                        <a href="mailto:info@deeventures.com" class="text_decoration">contact us<a/>.
+                    </p>
+                    <h3 style="margin: 0; color: #555555; direction: ltr; font-family: Cabin, Arial, Helvetica Neue, Helvetica, sans-serif; font-size: 16px; font-weight: 400; letter-spacing: normal; line-height: 120%; text-align: center; margin-top: 0; margin-bottom: 0;">
+                        <span
+                            id="5671ad78-f881-4153-b4e1-51e3092415cd">@2022
+                        </span>Deeventures LTD. All Rights Reserved<br />
+                    </h3>
+                <div>
+            </body>    
+        </html>   
+    `
 }
 
 export default SendEMail;

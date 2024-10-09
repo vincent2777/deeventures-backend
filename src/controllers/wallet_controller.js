@@ -5,8 +5,9 @@ import models from "../database/models";
 import WalletValidator from "../utils/validators/wallet_validator";
 import getCurrentDateTime from "../utils/datetime";
 import SendEMail from "../utils/send_email";
+import otpGenerator from "otp-generator";
 
-const { Wallets, ReferralWallets, Users, Transactions, Settings } = models;
+const { Wallets, ReferralWallets, Users, Transactions, Settings, OTP } = models;
 
 
 /**
@@ -422,17 +423,17 @@ class WalletController {
      **/
     static depositMoney = async (req, res) => {
         try {
-            const { id } = req.params;
+            const { userID } = req.params;
             const { amount } = req.body;
 
             //  Get the previous Amount.
             const wallet = await Wallets.findOne({
-                where: { user_id: id },
+                where: { user_id: userID },
             });
 
             // Insert transaction information into Transactions table
             const transactionPayload = {
-                user_id: id,
+                user_id: userID,
                 trnx_amount: amount,
                 trnx_type: "Wallet Funding",
                 trnx_desc: `Wallet funding with ${amount} naira.`,
@@ -484,41 +485,115 @@ class WalletController {
         }
     };
 
+
     /**
-  *@function withdrawMoney, (Withdraw money).
-  **/
+     *@function withdrawMoney, (Withdraw money).
+     **/
     static withdrawMoney = async (req, res) => {
         try {
-            const { amount, user_id, wchannel, account_number, account_name, bank_name } = req.body;
+            const { userID } = req.params;
+            const { amount } = req.body;
+
+
+            // Generate a Six digits OTP.
+            const otp = otpGenerator.generate(6, {
+                digits: true,
+                lowerCaseAlphabets: false,
+                upperCaseAlphabets: false,
+                specialChars: false
+            });
+            // console.log("GENERATED OTP::: ", otp);
+
+            const user = await Users.findOne({
+                where: { id: userID },
+            });
+            const userEmail = user.email;
+            const userName = user.username;
+            const subject = "Withdrawal Request";
+
+            //  Save OTP to the DB
+            await OTP.create({
+                otp,
+                user_id: userID
+            });
+
+            //  Send OTP to users mail.
+            const emailResponse = await SendEMail.sendOTPMail(userEmail, userName, subject, otp, amount);
+            console.log("EMAIL RESPONSE::: ", emailResponse.response);
+
+            const response = new Response(
+                true,
+                201,
+                "An OTP has been sent successfully to your email. Kindly check your email for your OTP.",
+            );
+            return res.status(response.code).json(response);
+
+        } catch (error) {
+            console.log(`ERROR::: ${error}`);
+
+            const response = new Response(
+                false,
+                500,
+                "Server error, please try again later."
+            );
+            return res.status(response.code).json(response);
+        }
+    };
+
+    /**
+  *@function verifyWithdrawMoney, (Verify money withdrawal).
+  **/
+    static verifyWithdrawMoney = async (req, res) => {
+        try {
+            const { userID } = req.params;
+            const { amount, withdrawalChannel, account_number, account_name, bank_name, otp } = req.body;
+
+            //  Find the OTP.
+            const foundOTP = await OTP.findOne({
+                where: { otp, user_id: userID },
+            });
+            if (foundOTP === null) {
+                const response = new Response(
+                    false,
+                    400,
+                    "The OTP is invalid, kindly request for an OTP."
+                );
+                return res.status(response.code).json(response);
+            }
 
             let wallet;
             //check if user has the amount in their wallet
-            if (wchannel === "main_wallet") {
+            if (withdrawalChannel === "main_wallet") {
                 wallet = await Wallets.findOne({
-                    where: { user_id: user_id },
+                    where: { user_id: userID },
                 });
             } else {
                 wallet = await ReferralWallets.findOne({
-                    where: { user_id: user_id },
+                    where: { user_id: userID },
                 });
             }
+            const prevAmount = wallet.amount;
 
-            if (wallet && wallet.amount < amount) {
+            if (prevAmount < amount) {
                 // Your logic here
                 return res.status(409).json(new Response(false, 409, "You don't have sufficient funds in your wallet"));
             } else {
-                const trnxDesc = `Withdrawal Request from  ${wchannel.replace("_", " ")} Account Number: ${account_number}, Account Name: ${account_name}, Bank: ${bank_name}`;
+
+                //  Update User's Wallet.
+                await Wallets.update({ amount: prevAmount - amount }, { where: { user_id: userID } });
+
+                const trnxDesc = `Withdrawal Request from  ${withdrawalChannel.replace("_", " ")} Account Number: ${account_number}, Account Name: ${account_name}, Bank: ${bank_name}`;
 
                 //get userEmail
                 const user = await Users.findOne({
-                    where: { id: user_id },
+                    where: { id: userID },
                 });
 
                 // Insert transaction information into Transactions table
                 const transactionPayload = {
-                    user_id: user_id,
+                    user_id: userID,
                     trnx_amount: amount,
-                    trnx_type: wchannel === 'main_wallet' ? 'Wallet Fund Withdrawal' : 'Bonus Fund Withdrawal',
+                    trnx_type: "Fund Withdrawal",
                     trnx_desc: trnxDesc,
                     trnx_status: 0,
                     trnx_rate: amount,

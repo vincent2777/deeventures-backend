@@ -10,9 +10,10 @@ module.exports = {
     database: process.env.DEV_DB_NAME,
     host: process.env.DEV_DB_HOST,
     port: process.env.DEV_DB_PORT,
-    // dialect: "postgres",
-    dialect: 'mysql',
-    logging: true,
+    dialect: "postgres",
+    logging: false,
+    // dialect: 'mysql',
+    // logging: true,
   },
   test: {
     username: process.env.TEST_DB_USERNAME,

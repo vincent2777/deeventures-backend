@@ -22,7 +22,7 @@ module.exports = {
         allowNull: false,
         type: Sequelize.INTEGER
       },
-      referral_commision: {
+      referral_commission: {
         allowNull: false,
         type: Sequelize.INTEGER
       },

@@ -89,6 +89,9 @@ class TransactionController {
                     case "bill_payment":
                         whereClause.trnx_type = "Bill Payment";
                         break;
+                    case "fund_withdrawal":
+                        whereClause.trnx_type = "Fund Withdrawal";
+                        break;
                     case "wallet_funding":
                         whereClause.trnx_type = "Wallet Funding";
                         break;

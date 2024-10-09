@@ -12,6 +12,7 @@ const app = express();
 
 
 // Create the directory "./public/images/transaction_proof" if the do not exist.
+!fs.existsSync(`./public/uploads/profile_image`) && fs.mkdirSync(`./public/uploads/profile_image`, { recursive: true });
 !fs.existsSync(`./public/uploads/crypto_proofs`) && fs.mkdirSync(`./public/uploads/crypto_proofs`, { recursive: true });
 
 //  Public Folder.
