@@ -133,7 +133,9 @@ class UserController {
         try {
             const requestBody = req.body;
 
-
+            console.log({
+                "asasa": requestBody
+            });
             //  Validate the Request Body.
             const { error, value } = AuthValidator.loginUserSchema.validate(requestBody);
             if (error) {
