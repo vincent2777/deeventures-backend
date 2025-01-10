@@ -6,8 +6,9 @@ import SendEMail from "../utils/send_email";
 import BillPaymentValidator from "../utils/validators/billPayment_validator";
 import axios from "axios";
 import getCurrentDateTime from "../utils/datetime";
+import { Op } from "sequelize";
 
-const { Wallets, Transactions, CableTVs, CableTVPackages, Users,ElectricCompany } = models;
+const { Wallets, Transactions, CableTVs, CableTVPackages, Users, ElectricCompany, Settings } = models;
 /**
  * @class BillPaymentController
  **/
@@ -101,10 +102,10 @@ class BillPaymentController {
 
             // Extract Electric companies
             // Object.keys(companiesData).forEach(electricCompanyKey => {
-                // electricCompanies.push({
-                //     "code": companiesData[electricCompanyKey]["ID"],
-                //     "name": companiesData[electricCompanyKey]["NAME"]
-                // });
+            // electricCompanies.push({
+            //     "code": companiesData[electricCompanyKey]["ID"],
+            //     "name": companiesData[electricCompanyKey]["NAME"]
+            // });
             // });
 
             const response = new Response(
@@ -127,6 +128,38 @@ class BillPaymentController {
     }
 
 
+
+    /**
+     * @function buyAirtime (Buy airtime).
+     **/
+    static getSettings = async () => {
+        // Fetch ClubKonect API details from Settings table
+        const clubKonectDetails = await Settings.findOne({
+            attributes: ['clubkonect_api', 'clubkonect_userid'], // Specify the columns you want
+        });
+
+        const clubConnectAPIKey = clubKonectDetails.clubkonect_api;
+        const clubConnectUserID = clubKonectDetails.clubkonect_userid;
+
+
+        if (!clubConnectAPIKey || !clubConnectUserID) {
+            console.error("ClubKonect API details missing in Settings table.");
+            const response = new Response(
+                false,
+                500,
+                "ClubKonect API details not configured. Please contact support."
+            );
+            return res.status(response.code).json(response);
+        }
+        console.log(`Fetched ClubKonect details: UserID: ${clubConnectUserID}, APIKey: ${clubConnectAPIKey}`);
+
+        return {
+            clubConnectAPIKey,
+            clubConnectUserID
+        }
+
+    }
+
     /**
      * @function buyAirtime (Buy airtime).
      **/
@@ -134,14 +167,18 @@ class BillPaymentController {
         try {
             const { id } = req.requestPayload;
             const requestBody = req.body;
-            const clubConnectAPIKey = process.env.CLUBCONNECT_API_KEY;
-            const clubConnectUserID = process.env.CLUBCONNECT_USER_ID;
-            const callBackURL = encodeURIComponent("http://localhost:5000/api/v1/bill_payment/buy_airtime");
-            // console.log("REQUEST PAYLOAD::: ", requestBody);
 
-            //  Validate the Request Body.
+            console.log(`Received request to buy airtime: UserID: ${id}, Payload: ${JSON.stringify(requestBody)}`);
+
+            // Fetch ClubKonect API details from Settings table
+            const clubKonectDetails = await this.getSettings()
+
+            const callBackURL = encodeURIComponent("http://localhost:5000/api/v1/bill_payment/buy_airtime");
+
+            // Validate the Request Body
             const { error, value } = BillPaymentValidator.buyAirtimeSchema.validate({ ...requestBody });
             if (error) {
+                console.error(`Validation error: ${error.message}`);
                 const response = new Response(
                     false,
                     400,
@@ -151,16 +188,22 @@ class BillPaymentController {
             }
             const { mobileNetwork, mobileNumber, airtimeAmount } = value;
 
-            //get userEmail
-            const user = await Users.findOne({
-                where: { id: id },
-            });
+            // Fetch user email
+            const user = await Users.findOne({ where: { id } });
+            if (!user) {
+                console.error(`User not found for ID: ${id}`);
+                const response = new Response(
+                    false,
+                    404,
+                    "User not found."
+                );
+                return res.status(response.code).json(response);
+            }
 
-            // Check user's wallet balance.
-            const wallet = await Wallets.findOne({
-                where: { user_id: id },
-            });
+            // Check user's wallet balance
+            const wallet = await Wallets.findOne({ where: { user_id: id } });
             if (!wallet) {
+                console.error("Wallet not found.");
                 const response = new Response(
                     false,
                     404,
@@ -168,7 +211,9 @@ class BillPaymentController {
                 );
                 return res.status(response.code).json(response);
             }
+
             if (wallet.amount < airtimeAmount) {
+                console.warn("Insufficient wallet balance.");
                 const response = new Response(
                     false,
                     300,
@@ -177,9 +222,17 @@ class BillPaymentController {
                 return res.status(response.code).json(response);
             }
 
-            // Initiate and make payment for airtime.
-            const initiatePaymentResponse = await axios.post(`https://www.nellobytesystems.com/APIAirtimeV1.asp?UserID=${clubConnectUserID}&APIKey=${clubConnectAPIKey}&MobileNetwork=${mobileNetwork}&Amount=${airtimeAmount}&MobileNumber=${mobileNumber}`);
+            // Initiate payment for airtime
+            const initiatePaymentResponse = await axios.post(
+                `https://www.nellobytesystems.com/APIAirtimeV1.asp?UserID=
+                ${clubKonectDetails.clubConnectUserID}
+                &APIKey=${clubKonectDetails.clubConnectAPIKey}
+                &MobileNetwork=${mobileNetwork}
+                &Amount=${airtimeAmount}
+                &MobileNumber=${mobileNumber}`);
+
             if (initiatePaymentResponse.data.status !== "ORDER_RECEIVED") {
+                console.error(`Failed to make payment. Response: ${initiatePaymentResponse.data}`);
                 const response = new Response(
                     false,
                     409,
@@ -188,27 +241,16 @@ class BillPaymentController {
                 return res.status(response.code).json(response);
             }
 
-            // Confirm payment
-            /*const confirmedPaymentResponse = await axios.post(`https://www.nellobytesystems.com/APIQueryV1.asp?UserID=${clubConnectUserID}&APIKey=${clubConnectAPIKey}&OrderID=${initiatePaymentResponse.data.orderid}`);
-            if (confirmedPaymentResponse.data.status !== "ORDER_RECEIVED" || confirmedPaymentResponse.data.status !== "ORDER_COMPLETED") {
-                const response = new Response(
-                    false,
-                    409,
-                    "Failed to make payment. Please try again later."
-                );
-                return res.status(response.code).json(response);
-            }*/
+            console.log("Payment initiated successfully.");
 
             // Deduct airtime amount from user's wallet
             const prevWalletAmount = wallet.amount;
-            await Wallets.update({ amount: prevWalletAmount - airtimeAmount }, {
-                where: { user_id: id },
-            });
+            await Wallets.update({ amount: prevWalletAmount - airtimeAmount }, { where: { user_id: id } });
 
             const orderType = initiatePaymentResponse.data.mobilenetwork;
             const trnxDesc = `Buy ${orderType} airtime`;
 
-            //send email
+            // Send email notification
             const subject = "Airtime Purchase Successful";
             const userEmail = user.email;
             const message = `
@@ -218,11 +260,10 @@ class BillPaymentController {
             <p><b>Description:</b> ${trnxDesc}</p> 
             <p><b>Date:</b> ${getCurrentDateTime()}</p>`;
 
-            const emailResponse = SendEMail.handleSendMail(userEmail, message, subject)
-            const mailData = await emailResponse;
-            // console.log("EMAIL RESPONSE::: ", mailData);
+            const emailResponse = await SendEMail.handleSendMail(userEmail, message, subject);
+            console.log(`Email sent. Response: ${emailResponse}`);
 
-            // Insert transaction information into Transactions table
+            // Insert transaction record
             const transaction = {
                 user_id: id,
                 trnx_amount: airtimeAmount,
@@ -235,7 +276,9 @@ class BillPaymentController {
                 to_receive: airtimeAmount,
                 currency: "NGN",
             };
-            await Transactions.create({ ...transaction });
+            await Transactions.create(transaction);
+
+            console.log("Transaction saved successfully.");
 
             const response = new Response(
                 true,
@@ -244,8 +287,9 @@ class BillPaymentController {
                 { transaction }
             );
             return res.status(response.code).json(response);
+
         } catch (error) {
-            console.log(`ERROR::: ${error}`);
+            console.error(`ERROR::: ${error.message}`, error);
 
             const response = new Response(
                 false,
@@ -257,6 +301,7 @@ class BillPaymentController {
     };
 
 
+
     /**
      * @function buyDataBundle (Buy data bundle).
      **/
@@ -264,8 +309,11 @@ class BillPaymentController {
         try {
             const { id } = req.requestPayload;
             const requestBody = req.body;
-            const clubConnectAPIKey = process.env.CLUBCONNECT_API_KEY;
-            const clubConnectUserID = process.env.CLUBCONNECT_USER_ID;
+
+            const clubKonectDetails = await this.getSettings()
+
+            const clubConnectAPIKey = clubKonectDetails.clubConnectAPIKey;
+            const clubConnectUserID = clubKonectDetails.clubConnectUserID;
             const callBackURL = encodeURIComponent("http://localhost:5000/api/v1/bill_payment/buy_data_bundle");
 
             //  Validate the Request Body.
@@ -393,8 +441,12 @@ class BillPaymentController {
         try {
             const { id } = req.requestPayload;
             const requestBody = req.body;
-            const clubConnectAPIKey = process.env.CLUBCONNECT_API_KEY;
-            const clubConnectUserID = process.env.CLUBCONNECT_USER_ID;
+            const clubKonectDetails = await this.getSettings()
+
+            const clubConnectAPIKey = clubKonectDetails.clubConnectAPIKey;
+            const clubConnectUserID = clubKonectDetails.clubConnectUserID;
+
+        
             const callBackURL = encodeURIComponent("http://localhost:5000/api/v1/bill_payment/buy_cable_tv");
             // console.log("CABLE TV::: ", cableTV, packageCode);
 
@@ -501,8 +553,11 @@ class BillPaymentController {
         try {
             const { id } = req.requestPayload;
             const requestBody = req.body;
-            const clubConnectAPIKey = process.env.CLUBCONNECT_API_KEY;
-            const clubConnectUserID = process.env.CLUBCONNECT_USER_ID;
+            const clubKonectDetails = await this.getSettings()
+
+            const clubConnectAPIKey = clubKonectDetails.clubConnectAPIKey;
+            const clubConnectUserID = clubKonectDetails.clubConnectUserID;
+           
             const callBackURL = encodeURIComponent("http://localhost:5000/api/v1/bill_payment/buy_cable_tv");
 
             //  Validate the Request Body.
@@ -663,8 +718,11 @@ class BillPaymentController {
         try {
             // Read and parse the raw POST data
             const { electric_company_code, meter_no } = req.query;
-            const clubConnectAPIKey = process.env.CLUBCONNECT_API_KEY;
-            const clubConnectUserID = process.env.CLUBCONNECT_USER_ID;
+            const clubKonectDetails = await this.getSettings()
+
+            const clubConnectAPIKey = clubKonectDetails.clubConnectAPIKey;
+            const clubConnectUserID = clubKonectDetails.clubConnectUserID;
+
 
             const url = `https://www.nellobytesystems.com/APIVerifyElectricityV1.asp?UserID=${clubConnectUserID}&APIKey=${clubConnectAPIKey}&ElectricCompany=${electric_company_code}&MeterNo=${meter_no}`;
 
