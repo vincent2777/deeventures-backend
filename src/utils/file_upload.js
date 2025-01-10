@@ -77,7 +77,7 @@ const profileImageUpload = multer({
 const transactionProofUpload = multer({
     storage: transactionProofStorage,
     fileFilter,
-    limits: { fileSize: 15 * 1024 * 1024 }, // 15MB
+    limits: { fileSize: 100 * 1024 * 1024 }, // 15MB
 }).array("transactionProof");
 
 const cardProofUpload = multer({
@@ -104,6 +104,7 @@ const uploadProfileImage = (req, res, next) => {
 const uploadTransactionProof = (req, res, next) => {
     transactionProofUpload(req, res, (error) => {
         if (error) {
+            console.error("Multer Error:", error.message || error);
             const response = new Response(
                 false,
                 410,
@@ -111,9 +112,10 @@ const uploadTransactionProof = (req, res, next) => {
             );
             return res.status(response.code).json(response);
         }
+        console.log("Files successfully uploaded:", req.files);
         return next();
     });
-}
+};
 
 const uploadCardProof = (req, res, next) => {
     cardProofUpload(req, res, (error) => {

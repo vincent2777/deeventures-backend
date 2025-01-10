@@ -10,6 +10,8 @@ var _send_email = _interopRequireDefault(require("../utils/send_email"));
 var _billPayment_validator = _interopRequireDefault(require("../utils/validators/billPayment_validator"));
 var _axios = _interopRequireDefault(require("axios"));
 var _datetime = _interopRequireDefault(require("../utils/datetime"));
+var _sequelize = require("sequelize");
+var _BillPaymentController;
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 function _defineProperty(obj, key, value) { key = _toPropertyKey(key); if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 function _toPropertyKey(t) { var i = _toPrimitive(t, "string"); return "symbol" == typeof i ? i : i + ""; }
@@ -20,12 +22,14 @@ const {
   CableTVs,
   CableTVPackages,
   Users,
-  ElectricCompany
+  ElectricCompany,
+  Settings
 } = _models.default;
 /**
  * @class BillPaymentController
  **/
 class BillPaymentController {}
+_BillPaymentController = BillPaymentController;
 /**
  * @function getDataBundles (Get Data Bundles).
  **/
@@ -117,18 +121,40 @@ _defineProperty(BillPaymentController, "getElectricCompanies", async (req, res) 
 /**
  * @function buyAirtime (Buy airtime).
  **/
+_defineProperty(BillPaymentController, "getSettings", async () => {
+  // Fetch ClubKonect API details from Settings table
+  const clubKonectDetails = await Settings.findOne({
+    attributes: ['clubkonect_api', 'clubkonect_userid'] // Specify the columns you want
+  });
+  const clubConnectAPIKey = clubKonectDetails.clubkonect_api;
+  const clubConnectUserID = clubKonectDetails.clubkonect_userid;
+  if (!clubConnectAPIKey || !clubConnectUserID) {
+    console.error("ClubKonect API details missing in Settings table.");
+    const response = new _response.default(false, 500, "ClubKonect API details not configured. Please contact support.");
+    return res.status(response.code).json(response);
+  }
+  console.log(`Fetched ClubKonect details: UserID: ${clubConnectUserID}, APIKey: ${clubConnectAPIKey}`);
+  return {
+    clubConnectAPIKey,
+    clubConnectUserID
+  };
+});
+/**
+ * @function buyAirtime (Buy airtime).
+ **/
 _defineProperty(BillPaymentController, "buyAirtime", async (req, res) => {
   try {
     const {
       id
     } = req.requestPayload;
     const requestBody = req.body;
-    const clubConnectAPIKey = process.env.CLUBCONNECT_API_KEY;
-    const clubConnectUserID = process.env.CLUBCONNECT_USER_ID;
-    const callBackURL = encodeURIComponent("http://localhost:5000/api/v1/bill_payment/buy_airtime");
-    // console.log("REQUEST PAYLOAD::: ", requestBody);
+    console.log(`Received request to buy airtime: UserID: ${id}, Payload: ${JSON.stringify(requestBody)}`);
 
-    //  Validate the Request Body.
+    // Fetch ClubKonect API details from Settings table
+    const clubKonectDetails = await _BillPaymentController.getSettings();
+    const callBackURL = encodeURIComponent("http://localhost:5000/api/v1/bill_payment/buy_airtime");
+
+    // Validate the Request Body
     const {
       error,
       value
@@ -136,6 +162,7 @@ _defineProperty(BillPaymentController, "buyAirtime", async (req, res) => {
       ...requestBody
     });
     if (error) {
+      console.error(`Validation error: ${error.message}`);
       const response = new _response.default(false, 400, `${error.message}`);
       return res.status(response.code).json(response);
     }
@@ -145,45 +172,48 @@ _defineProperty(BillPaymentController, "buyAirtime", async (req, res) => {
       airtimeAmount
     } = value;
 
-    //get userEmail
+    // Fetch user email
     const user = await Users.findOne({
       where: {
-        id: id
+        id
       }
     });
+    if (!user) {
+      console.error(`User not found for ID: ${id}`);
+      const response = new _response.default(false, 404, "User not found.");
+      return res.status(response.code).json(response);
+    }
 
-    // Check user's wallet balance.
+    // Check user's wallet balance
     const wallet = await Wallets.findOne({
       where: {
         user_id: id
       }
     });
     if (!wallet) {
+      console.error("Wallet not found.");
       const response = new _response.default(false, 404, "Wallet not found.");
       return res.status(response.code).json(response);
     }
     if (wallet.amount < airtimeAmount) {
+      console.warn("Insufficient wallet balance.");
       const response = new _response.default(false, 300, "Insufficient wallet balance. Kindly top-up your wallet by selling crypto or gift card.");
       return res.status(response.code).json(response);
     }
 
-    // Initiate and make payment for airtime.
-    const initiatePaymentResponse = await _axios.default.post(`https://www.nellobytesystems.com/APIAirtimeV1.asp?UserID=${clubConnectUserID}&APIKey=${clubConnectAPIKey}&MobileNetwork=${mobileNetwork}&Amount=${airtimeAmount}&MobileNumber=${mobileNumber}`);
+    // Initiate payment for airtime
+    const initiatePaymentResponse = await _axios.default.post(`https://www.nellobytesystems.com/APIAirtimeV1.asp?UserID=
+                ${clubKonectDetails.clubConnectUserID}
+                &APIKey=${clubKonectDetails.clubConnectAPIKey}
+                &MobileNetwork=${mobileNetwork}
+                &Amount=${airtimeAmount}
+                &MobileNumber=${mobileNumber}`);
     if (initiatePaymentResponse.data.status !== "ORDER_RECEIVED") {
+      console.error(`Failed to make payment. Response: ${initiatePaymentResponse.data}`);
       const response = new _response.default(false, 409, "Failed to make payment. Please try again later.");
       return res.status(response.code).json(response);
     }
-
-    // Confirm payment
-    /*const confirmedPaymentResponse = await axios.post(`https://www.nellobytesystems.com/APIQueryV1.asp?UserID=${clubConnectUserID}&APIKey=${clubConnectAPIKey}&OrderID=${initiatePaymentResponse.data.orderid}`);
-    if (confirmedPaymentResponse.data.status !== "ORDER_RECEIVED" || confirmedPaymentResponse.data.status !== "ORDER_COMPLETED") {
-        const response = new Response(
-            false,
-            409,
-            "Failed to make payment. Please try again later."
-        );
-        return res.status(response.code).json(response);
-    }*/
+    console.log("Payment initiated successfully.");
 
     // Deduct airtime amount from user's wallet
     const prevWalletAmount = wallet.amount;
@@ -197,7 +227,7 @@ _defineProperty(BillPaymentController, "buyAirtime", async (req, res) => {
     const orderType = initiatePaymentResponse.data.mobilenetwork;
     const trnxDesc = `Buy ${orderType} airtime`;
 
-    //send email
+    // Send email notification
     const subject = "Airtime Purchase Successful";
     const userEmail = user.email;
     const message = `
@@ -206,11 +236,10 @@ _defineProperty(BillPaymentController, "buyAirtime", async (req, res) => {
             <p><b>Mobile Number:</b> ${mobileNumber}</p> 
             <p><b>Description:</b> ${trnxDesc}</p> 
             <p><b>Date:</b> ${(0, _datetime.default)()}</p>`;
-    const emailResponse = _send_email.default.handleSendMail(userEmail, message, subject);
-    const mailData = await emailResponse;
-    // console.log("EMAIL RESPONSE::: ", mailData);
+    const emailResponse = await _send_email.default.handleSendMail(userEmail, message, subject);
+    console.log(`Email sent. Response: ${emailResponse}`);
 
-    // Insert transaction information into Transactions table
+    // Insert transaction record
     const transaction = {
       user_id: id,
       trnx_amount: airtimeAmount,
@@ -223,15 +252,14 @@ _defineProperty(BillPaymentController, "buyAirtime", async (req, res) => {
       to_receive: airtimeAmount,
       currency: "NGN"
     };
-    await Transactions.create({
-      ...transaction
-    });
+    await Transactions.create(transaction);
+    console.log("Transaction saved successfully.");
     const response = new _response.default(true, 200, `You have successfully topped up ${airtimeAmount} credit unit to ${mobileNumber}.`, {
       transaction
     });
     return res.status(response.code).json(response);
   } catch (error) {
-    console.log(`ERROR::: ${error}`);
+    console.error(`ERROR::: ${error.message}`, error);
     const response = new _response.default(false, 500, 'Server error, please try again later.');
     return res.status(response.code).json(response);
   }
@@ -245,8 +273,9 @@ _defineProperty(BillPaymentController, "buyDataBundle", async (req, res) => {
       id
     } = req.requestPayload;
     const requestBody = req.body;
-    const clubConnectAPIKey = process.env.CLUBCONNECT_API_KEY;
-    const clubConnectUserID = process.env.CLUBCONNECT_USER_ID;
+    const clubKonectDetails = await _BillPaymentController.getSettings();
+    const clubConnectAPIKey = clubKonectDetails.clubConnectAPIKey;
+    const clubConnectUserID = clubKonectDetails.clubConnectUserID;
     const callBackURL = encodeURIComponent("http://localhost:5000/api/v1/bill_payment/buy_data_bundle");
 
     //  Validate the Request Body.
@@ -366,8 +395,9 @@ _defineProperty(BillPaymentController, "buyCableTV", async (req, res) => {
       id
     } = req.requestPayload;
     const requestBody = req.body;
-    const clubConnectAPIKey = process.env.CLUBCONNECT_API_KEY;
-    const clubConnectUserID = process.env.CLUBCONNECT_USER_ID;
+    const clubKonectDetails = await _BillPaymentController.getSettings();
+    const clubConnectAPIKey = clubKonectDetails.clubConnectAPIKey;
+    const clubConnectUserID = clubKonectDetails.clubConnectUserID;
     const callBackURL = encodeURIComponent("http://localhost:5000/api/v1/bill_payment/buy_cable_tv");
     // console.log("CABLE TV::: ", cableTV, packageCode);
 
@@ -462,8 +492,9 @@ _defineProperty(BillPaymentController, "buyElectricity", async (req, res) => {
       id
     } = req.requestPayload;
     const requestBody = req.body;
-    const clubConnectAPIKey = process.env.CLUBCONNECT_API_KEY;
-    const clubConnectUserID = process.env.CLUBCONNECT_USER_ID;
+    const clubKonectDetails = await _BillPaymentController.getSettings();
+    const clubConnectAPIKey = clubKonectDetails.clubConnectAPIKey;
+    const clubConnectUserID = clubKonectDetails.clubConnectUserID;
     const callBackURL = encodeURIComponent("http://localhost:5000/api/v1/bill_payment/buy_cable_tv");
 
     //  Validate the Request Body.
@@ -604,8 +635,9 @@ _defineProperty(BillPaymentController, "validateMeterNo", async (req, res) => {
       electric_company_code,
       meter_no
     } = req.query;
-    const clubConnectAPIKey = process.env.CLUBCONNECT_API_KEY;
-    const clubConnectUserID = process.env.CLUBCONNECT_USER_ID;
+    const clubKonectDetails = await _BillPaymentController.getSettings();
+    const clubConnectAPIKey = clubKonectDetails.clubConnectAPIKey;
+    const clubConnectUserID = clubKonectDetails.clubConnectUserID;
     const url = `https://www.nellobytesystems.com/APIVerifyElectricityV1.asp?UserID=${clubConnectUserID}&APIKey=${clubConnectAPIKey}&ElectricCompany=${electric_company_code}&MeterNo=${meter_no}`;
 
     // Make a request to the external API

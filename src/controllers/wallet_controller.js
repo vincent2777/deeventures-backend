@@ -489,48 +489,75 @@ class WalletController {
     /**
      *@function withdrawMoney, (Withdraw money).
      **/
-    static withdrawMoney = async (req, res) => {
+     static withdrawMoney = async (req, res) => {
         try {
             const { userID } = req.params;
             const { amount } = req.body;
-
-
-            // Generate a Six digits OTP.
+    
+            console.log(`Request Received: userID: ${userID}, amount: ${amount}`);
+    
+            // Generate a Six-digit OTP
             const otp = otpGenerator.generate(6, {
                 digits: true,
                 lowerCaseAlphabets: false,
                 upperCaseAlphabets: false,
-                specialChars: false
+                specialChars: false,
             });
-            // console.log("GENERATED OTP::: ", otp);
-
+            console.log(`Generated OTP: ${otp}`);
+    
+            // Fetch user details
             const user = await Users.findOne({
                 where: { id: userID },
             });
+    
+            if (!user) {
+                console.error(`User not found for userID: ${userID}`);
+                const response = new Response(
+                    false,
+                    404,
+                    "User not found. Please check the user ID and try again."
+                );
+                return res.status(response.code).json(response);
+            }
+    
             const userEmail = user.email;
             const userName = user.username;
-            const subject = "Withdrawal Request";
-
-            //  Save OTP to the DB
+    
+            console.log(`User found: email: ${userEmail}, username: ${userName}`);
+    
+            // Save OTP to the database
             await OTP.create({
                 otp,
-                user_id: userID
+                user_id: userID,
             });
-
-            //  Send OTP to users mail.
+            console.log(`OTP saved to the database for userID: ${userID}`);
+    
+            // Send OTP to the user's email
+            const subject = "Withdrawal Request";
             const emailResponse = await SendEMail.sendOTPMail(userEmail, userName, subject, otp, amount);
-            console.log("EMAIL RESPONSE::: ", emailResponse.response);
-
+            
+            if (!emailResponse || !emailResponse.response) {
+                console.error(`Failed to send email to: ${userEmail}`);
+                const response = new Response(
+                    false,
+                    500,
+                    "Failed to send OTP email. Please try again later."
+                );
+                return res.status(response.code).json(response);
+            }
+    
+            console.log(`Email sent successfully. Response: ${emailResponse.response}`);
+    
             const response = new Response(
                 true,
                 201,
-                "An OTP has been sent successfully to your email. Kindly check your email for your OTP.",
+                "An OTP has been sent successfully to your email. Kindly check your email for your OTP."
             );
             return res.status(response.code).json(response);
-
+    
         } catch (error) {
-            console.log(`ERROR::: ${error}`);
-
+            console.error(`ERROR::: ${error.message}`, error);
+    
             const response = new Response(
                 false,
                 500,
@@ -539,6 +566,7 @@ class WalletController {
             return res.status(response.code).json(response);
         }
     };
+    
 
     /**
   *@function verifyWithdrawMoney, (Verify money withdrawal).

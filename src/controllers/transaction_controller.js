@@ -123,7 +123,7 @@ class TransactionController {
                     true,
                     200,
                     "No transaction found.",
-                    { transactions: [] } 
+                    { transactions: [] }
                 );
                 return res.status(response.code).json(response);
             }
@@ -290,50 +290,54 @@ class TransactionController {
     /**
      * @function deleteTransaction (Delete a transaction).
      **/
+    // Transaction Controller
     static uploadTransactionProof = async (req, res) => {
         try {
             const { trnx_reference } = req.params;
-            const filename = req.file.filename;
-            const imageURL = `http://${req.headers.host}/deeventure-apis/uploads/crypto_proofs/${filename}`;
 
-            // const imageURL = `http://${req.headers.host}/uploads/crypto_proofs/${filename}`;
-            // console.log("IMAGE FILE:::", req.file);
-
-            //  Update the Transaction image.
-            const updatedTransaction = await Transactions.update(
-                { trnx_image: imageURL },
-                { where: { trnx_reference } }
-            );
-            if (updatedTransaction[0] === 0) {
-                const response = new Response(
-                    false,
-                    400,
-                    "Failed to update transaction."
-                );
+            // Ensure files are provided
+            if (!req.files || req.files.length === 0) {
+                const response = new Response(false, 400, "No files uploaded.");
                 return res.status(response.code).json(response);
             }
 
-            //  Get the updated transaction back.
-            const transaction = await Transactions.findOne({ where: { trnx_reference } });
+            // Process uploaded files
+            const fileURLs = req.files.map(file => {
+                return `http://${req.headers.host}/deeventure-apis/uploads/crypto_proofs/${file.filename}`;
+            });
 
+            console.log("IMAGE FILES:::", req.files);
+
+            // Optionally handle multiple file URLs here
+            const imageURL = fileURLs[0]; // If you only want the first file
+
+            // Update the transaction with the image URL
+            const updatedTransaction = await Transactions.update(
+                { trnx_image: imageURL }, // Save the first file URL or process all URLs as needed
+                { where: { trnx_reference } }
+            );
+
+            if (updatedTransaction[0] === 0) {
+                const response = new Response(false, 400, "Failed to update transaction.");
+                return res.status(response.code).json(response);
+            }
+
+            // Success Response
             const response = new Response(
                 true,
                 200,
-                "Transaction image uploaded successfully.",
-                { transaction }
+                "Transaction updated successfully.",
+                { imageURL }
             );
             return res.status(response.code).json(response);
-        } catch (error) {
-            console.log(`ERROR::: ${error}`);
 
-            const response = new Response(
-                false,
-                500,
-                'Server error, please try again later.'
-            );
+        } catch (error) {
+            console.error("Error while updating transaction proof:", error.message);
+            const response = new Response(false, 500, "An error occurred while processing your request.");
             return res.status(response.code).json(response);
         }
     };
+
 }
 
 export default TransactionController;

@@ -80,7 +80,7 @@ const transactionProofUpload = (0, _multer.default)({
   storage: transactionProofStorage,
   fileFilter,
   limits: {
-    fileSize: 15 * 1024 * 1024
+    fileSize: 100 * 1024 * 1024
   } // 15MB
 }).array("transactionProof");
 const cardProofUpload = (0, _multer.default)({
@@ -105,9 +105,11 @@ exports.uploadProfileImage = uploadProfileImage;
 const uploadTransactionProof = (req, res, next) => {
   transactionProofUpload(req, res, error => {
     if (error) {
+      console.error("Multer Error:", error.message || error);
       const response = new _response.default(false, 410, error.message ? `Error: ${error.message}` : error);
       return res.status(response.code).json(response);
     }
+    console.log("Files successfully uploaded:", req.files);
     return next();
   });
 };

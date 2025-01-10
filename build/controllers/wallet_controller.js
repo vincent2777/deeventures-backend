@@ -392,38 +392,52 @@ _defineProperty(WalletController, "withdrawMoney", async (req, res) => {
     const {
       amount
     } = req.body;
+    console.log(`Request Received: userID: ${userID}, amount: ${amount}`);
 
-    // Generate a Six digits OTP.
+    // Generate a Six-digit OTP
     const otp = _otpGenerator.default.generate(6, {
       digits: true,
       lowerCaseAlphabets: false,
       upperCaseAlphabets: false,
       specialChars: false
     });
-    // console.log("GENERATED OTP::: ", otp);
+    console.log(`Generated OTP: ${otp}`);
 
+    // Fetch user details
     const user = await Users.findOne({
       where: {
         id: userID
       }
     });
+    if (!user) {
+      console.error(`User not found for userID: ${userID}`);
+      const response = new _response.default(false, 404, "User not found. Please check the user ID and try again.");
+      return res.status(response.code).json(response);
+    }
     const userEmail = user.email;
     const userName = user.username;
-    const subject = "Withdrawal Request";
+    console.log(`User found: email: ${userEmail}, username: ${userName}`);
 
-    //  Save OTP to the DB
+    // Save OTP to the database
     await OTP.create({
       otp,
       user_id: userID
     });
+    console.log(`OTP saved to the database for userID: ${userID}`);
 
-    //  Send OTP to users mail.
+    // Send OTP to the user's email
+    const subject = "Withdrawal Request";
     const emailResponse = await _send_email.default.sendOTPMail(userEmail, userName, subject, otp, amount);
-    console.log("EMAIL RESPONSE::: ", emailResponse.response);
+    if (!emailResponse || !emailResponse.response) {
+      console.error(`Failed to send email to: ${userEmail}`);
+      const response = new _response.default(false, 500, "Failed to send OTP email. Please try again later.");
+      return res.status(response.code).json(response);
+    }
+    console.log(`Email sent successfully. Response: ${emailResponse.response}`);
     const response = new _response.default(true, 201, "An OTP has been sent successfully to your email. Kindly check your email for your OTP.");
     return res.status(response.code).json(response);
   } catch (error) {
-    console.log(`ERROR::: ${error}`);
+    console.error(`ERROR::: ${error.message}`, error);
     const response = new _response.default(false, 500, "Server error, please try again later.");
     return res.status(response.code).json(response);
   }
