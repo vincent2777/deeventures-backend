@@ -51,7 +51,7 @@ app.get('/', (req, res) => {
 //  Create other Routes.
 app.use('/api/v1', routes);
 
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.NODE_PORT;
 const HOST = process.env.HOST || 'localhost';
 const BASE_URL = process.env.BASE_URL || `http://${HOST}:${PORT}`;
 
