@@ -12,8 +12,6 @@ module.exports = {
     port: process.env.DEV_DB_PORT,
     dialect: "mysql",
     logging: false
-    // dialect: 'mysql',
-    // logging: true,
   },
   test: {
     username: process.env.TEST_DB_USERNAME,
@@ -21,7 +19,6 @@ module.exports = {
     database: process.env.TEST_DB_NAME,
     host: process.env.TEST_DB_HOST,
     port: process.env.TEST_DB_PORT,
-    // dialect: "postgres",
     dialect: 'mysql',
     logging: false
   },
@@ -41,8 +38,7 @@ module.exports = {
     //process.env.DEV_DB_HOST,
     port: '3307',
     //process.env.DEV_DB_PORT,
-    // dialect: "mysql",
-    dialect: 'mysql',
+    dialect: "mysql",
     logging: true
     // dialectOptions : {
     //   ssl: {

@@ -3,7 +3,7 @@
 import bcrypt from 'bcryptjs'
 
 /** @type {import('sequelize-cli').Migration} */
-module.exports = {
+export default {
   async up (queryInterface, Sequelize) {
     /**
      * Add seed commands here.

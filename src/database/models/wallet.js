@@ -2,7 +2,7 @@
 
 import { Model } from 'sequelize';
 
-module.exports = (sequelize, DataTypes) => {
+export default (sequelize, DataTypes) => {
   class Wallet extends Model {
     /**
      * Helper method for defining associations.

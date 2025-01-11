@@ -1,8 +1,12 @@
 "use strict";
 
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
 var _sequelize = require("sequelize");
 var _random_number_generator = require("../../utils/random_number_generator");
-module.exports = (sequelize, DataTypes) => {
+var _default = (sequelize, DataTypes) => {
   class Transaction extends _sequelize.Model {
     /**
      * Helper method for defining associations.
@@ -45,4 +49,5 @@ module.exports = (sequelize, DataTypes) => {
   });
   return Transaction;
 };
+exports.default = _default;
 //# sourceMappingURL=transaction.js.map

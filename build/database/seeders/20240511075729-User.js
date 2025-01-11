@@ -1,9 +1,13 @@
 "use strict";
 
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
 var _bcryptjs = _interopRequireDefault(require("bcryptjs"));
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 /** @type {import('sequelize-cli').Migration} */
-module.exports = {
+var _default = exports.default = {
   async up(queryInterface, Sequelize) {
     /**
      * Add seed commands here.
