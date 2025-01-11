@@ -1,7 +1,11 @@
 "use strict";
 
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
 var _sequelize = require("sequelize");
-module.exports = (sequelize, DataTypes) => {
+var _default = (sequelize, DataTypes) => {
   class Currency extends _sequelize.Model {
     /**
      * Helper method for defining associations.
@@ -33,4 +37,5 @@ module.exports = (sequelize, DataTypes) => {
   });
   return Currency;
 };
+exports.default = _default;
 //# sourceMappingURL=currency.js.map

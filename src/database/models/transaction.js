@@ -3,7 +3,7 @@
 import { Model } from "sequelize";
 import {generateFixedRandomID} from "../../utils/random_number_generator";
 
-module.exports = (sequelize, DataTypes) => {
+export default (sequelize, DataTypes) => {
   class Transaction extends Model {
     /**
      * Helper method for defining associations.

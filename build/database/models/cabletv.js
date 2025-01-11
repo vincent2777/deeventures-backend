@@ -1,7 +1,11 @@
 "use strict";
 
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
 var _sequelize = require("sequelize");
-module.exports = (sequelize, DataTypes) => {
+var _default = (sequelize, DataTypes) => {
   class CableTV extends _sequelize.Model {
     /**
      * Helper method for defining associations.
@@ -24,4 +28,5 @@ module.exports = (sequelize, DataTypes) => {
   });
   return CableTV;
 };
+exports.default = _default;
 //# sourceMappingURL=cabletv.js.map

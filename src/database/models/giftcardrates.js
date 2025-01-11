@@ -2,7 +2,7 @@
 
 import { Model } from "sequelize";
 
-module.exports = (sequelize, DataTypes) => {
+export default (sequelize, DataTypes) => {
     class GiftCardRates extends Model {
         /**
          * Helper method for defining associations.
