@@ -1,10 +1,14 @@
 "use strict";
 
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
 var _bcryptjs = _interopRequireDefault(require("bcryptjs"));
 var _sequelize = require("sequelize");
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 const crypto = require('crypto');
-module.exports = (sequelize, DataTypes) => {
+var _default = (sequelize, DataTypes) => {
   class User extends _sequelize.Model {
     /**
      * Helper method for defining associations.
@@ -71,4 +75,5 @@ module.exports = (sequelize, DataTypes) => {
   });
   return User;
 };
+exports.default = _default;
 //# sourceMappingURL=user.js.map
