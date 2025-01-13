@@ -2,8 +2,8 @@
 
 import express from "express";
 import dotenv from 'dotenv';
-import Response from "./utils/response";
-import routes from "./routes";
+import Response from "./utils/response.js";
+import routes from "./routes/index.js";
 import fs from "fs";
 dotenv.config();
 
