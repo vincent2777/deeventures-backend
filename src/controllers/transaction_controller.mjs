@@ -1,8 +1,8 @@
 "use strict";
 
-import models from "../database/models";
-import Response from "../utils/response";
-import TransactionValidator from "../utils/validators/transaction_validator";
+import models from "../database/models/index.mjs";
+import Response from "../utils/response.mjs";
+import TransactionValidator from "../utils/validators/transaction_validator.mjs";
 import Sequelize from "sequelize";
 
 const { Transactions, Users } = models;

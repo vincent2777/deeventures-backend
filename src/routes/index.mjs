@@ -3,18 +3,18 @@
 import { Router } from "express";
 
 //  Import all the required routes.
-import userRouter from "./user_routes.js";
-import currencyRouter from "./currency_routes.js";
-import cryptoNetworkRouter from "./cryptoNetwork_routes.js";
-import transactionRouter from "./transaction_routes.js";
-import walletRouter from "./wallet_routes.js";
-import giftCardRouter from "./giftCard_routes.js";
-import billPaymentRouter from "./billPayment_routes";
-import cableTVRouter from "./cableTV_routes";
-import electricityVRouter from "./electricity_routes";
-import networkRouter from "./network_routes";
-import dataPlanRouter from "./dataPlan_routes";
-import settingRouter from "./setting_routes";
+import userRouter from "./user_routes.mjs";
+import currencyRouter from "./currency_routes.mjs";
+import cryptoNetworkRouter from "./cryptoNetwork_routes.mjs";
+import transactionRouter from "./transaction_routes.mjs";
+import walletRouter from "./wallet_routes.mjs";
+import giftCardRouter from "./giftCard_routes.mjs";
+import billPaymentRouter from "./billPayment_routes.mjs";
+import cableTVRouter from "./cableTV_routes.mjs";
+import electricityVRouter from "./electricity_routes.mjs";
+import networkRouter from "./network_routes.mjs";
+import dataPlanRouter from "./dataPlan_routes.mjs";
+import settingRouter from "./setting_routes.mjs";
 
 
 //  Initialize Express Router.

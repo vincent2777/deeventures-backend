@@ -1,9 +1,9 @@
 "use strict";
 
-import models from "../database/models";
-import Response from "../utils/response";
-import CurrencyNetworkValidator from "../utils/validators/currencyNetwork_validator";
-import CurrencyValidator from "../utils/validators/currency_validator";
+import models from "../database/models/index.mjs";
+import Response from "../utils/response.mjs";
+import CurrencyNetworkValidator from "../utils/validators/currencyNetwork_validator.mjs";
+import CurrencyValidator from "../utils/validators/currency_validator.mjs";
 
 const { CurrencyNetworks } = models;
 

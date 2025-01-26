@@ -1,8 +1,8 @@
 "use strict";
 
-import models from "../database/models";
-import Response from "../utils/response";
-import GiftCardValidator from "../utils/validators/giftCard_validator";
+import models from "../database/models/index.mjs";
+import Response from "../utils/response.mjs";
+import GiftCardValidator from "../utils/validators/giftCard_validator.mjs";
 
 const { GiftCards, GiftCardRates, Transactions } = models;
 

@@ -1,8 +1,8 @@
 "use strict";
 
 import { Router } from "express";
-import TokenValidation from "../utils/token_validation";
-import DataPlanController from "../controllers/dataPlan_controller";
+import TokenValidation from "../utils/token_validation.mjs";
+import DataPlanController from "../controllers/dataPlan_controller.mjs";
 
 //  Set up Express Router.
 const dataPlanRouter = Router();

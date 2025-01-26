@@ -1,8 +1,8 @@
 "use strict";
 
-import models from "../database/models";
-import Response from "../utils/response";
-import CurrencyValidator from "../utils/validators/currency_validator";
+import models from "../database/models/index.mjs";
+import Response from "../utils/response.mjs";
+import CurrencyValidator from "../utils/validators/currency_validator.mjs";
 import { Op, where } from "sequelize";
 
 const { Currencies, CurrencyNetworks } = models;

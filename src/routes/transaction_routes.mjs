@@ -1,9 +1,9 @@
 "use strict";
 
 import { Router } from "express";
-import TransactionController from "../controllers/transaction_controller";
-import TokenValidation from "../utils/token_validation";
-import {uploadTransactionProof} from "../utils/file_upload";
+import TransactionController from "../controllers/transaction_controller.mjs";
+import TokenValidation from "../utils/token_validation.mjs";
+import {uploadTransactionProof} from "../utils/file_upload.mjs";
 
 //  Set up Express Router.
 const transactionRouter = Router();

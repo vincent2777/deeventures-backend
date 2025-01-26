@@ -1,8 +1,8 @@
 "use strict";
 
 import { Router } from 'express';
-import TokenValidation from "../utils/token_validation";
-import BillPaymentController from "../controllers/billPayment_controller";
+import TokenValidation from "../utils/token_validation.mjs";
+import BillPaymentController from "../controllers/billPayment_controller.mjs";
 
 //  Set up Express Router.
 const billPaymentRouter = Router();

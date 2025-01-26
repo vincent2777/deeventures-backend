@@ -1,8 +1,8 @@
 "use strict";
 
 import { Router } from "express";
-import NetworkController from "../controllers/network_controller";
-import TokenValidation from "../utils/token_validation";
+import NetworkController from "../controllers/network_controller.mjs";
+import TokenValidation from "../utils/token_validation.mjs";
 
 //  Set up Express Router.
 const networkRouter = Router();

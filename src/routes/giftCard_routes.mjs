@@ -2,9 +2,9 @@
 
 
 import { Router } from "express";
-import TokenValidation from "../utils/token_validation";
-import GiftCardController from "../controllers/giftCard_controller";
-import {uploadCardProof} from "../utils/file_upload";
+import TokenValidation from "../utils/token_validation.mjs";
+import GiftCardController from "../controllers/giftCard_controller.mjs";
+import {uploadCardProof} from "../utils/file_upload.mjs";
 
 //  Set up Express Router.
 const giftCardRouter = Router();

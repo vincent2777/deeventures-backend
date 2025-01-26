@@ -1,8 +1,8 @@
 "use strict";
 
 import { Router } from 'express';
-import CurrencyNetworkController from "../controllers/currencyNetwork_controller";
-import TokenValidation from "../utils/token_validation";
+import CurrencyNetworkController from "../controllers/currencyNetwork_controller.mjs";
+import TokenValidation from "../utils/token_validation.mjs";
 
 //  Set up Express Router.
 const cryptoNetworkRouter = Router();

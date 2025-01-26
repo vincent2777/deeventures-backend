@@ -1,10 +1,10 @@
 "use strict";
 
-import Response from "../utils/response";
-import models from "../database/models";
-import WalletValidator from "../utils/validators/wallet_validator";
-import getCurrentDateTime from "../utils/datetime";
-import SendEMail from "../utils/send_email";
+import Response from "../utils/response.mjs";
+import models from "../database/models/index.mjs";
+import WalletValidator from "../utils/validators/wallet_validator.mjs";
+import getCurrentDateTime from "../utils/datetime.mjs";
+import SendEMail from "../utils/send_email.mjs";
 import otpGenerator from "otp-generator";
 
 const { Wallets, ReferralWallets, Users, Transactions, Settings, OTP } = models;

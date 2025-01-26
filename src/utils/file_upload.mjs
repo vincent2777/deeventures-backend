@@ -3,7 +3,7 @@
 import multer from "multer";
 import path from "path";
 import fs from "fs";
-import Response from "./response";
+import Response from "./response.mjs";
 
 // Utility function to create multer storage configuration
 const createStorage = (destinationDir, filePrefix) => {

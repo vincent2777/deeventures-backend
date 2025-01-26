@@ -1,11 +1,11 @@
 "use strict";
 
-import models from "../database/models";
-import Response from "../utils/response";
-import SendEMail from "../utils/send_email";
-import BillPaymentValidator from "../utils/validators/billPayment_validator";
+import models from "../database/models/index.mjs";
+import Response from "../utils/response.mjs";
+import SendEMail from "../utils/send_email.mjs";
+import BillPaymentValidator from "../utils/validators/billPayment_validator.mjs";
 import axios from "axios";
-import getCurrentDateTime from "../utils/datetime";
+import getCurrentDateTime from "../utils/datetime.mjs";
 import { Op } from "sequelize";
 
 const { Wallets, Transactions, CableTVs, CableTVPackages, Users, ElectricCompany, Settings } = models;

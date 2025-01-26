@@ -1,8 +1,8 @@
 "use strict";
 
-import models from "../database/models";
-import Response from "../utils/response";
-import ElectricCompanyValidator from "../utils/validators/electricCompany_validator";
+import models from "../database/models/index.mjs";
+import Response from "../utils/response.mjs";
+import ElectricCompanyValidator from "../utils/validators/electricCompany_validator.mjs";
 import axios from "axios";
 
 const { ElectricCompanies, ElectricBills, MeterTypes } = models;

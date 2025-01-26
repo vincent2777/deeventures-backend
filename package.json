@@ -2,15 +2,15 @@
   "name": "deeventures_api",
   "version": "1.0.0",
   "description": "DeeVentures API description",
-  "main": "app.js",
+  "main": "app.mjs",
   "repository": "https://github.com/vincent2777/deeventures.git",
   "keywords": [],
   "author": "Osondu Tochukwu (tosolife@yahoo.com, +2348036802243)",
   "license": "MIT",
-  "type": "commonjs",
+  "type": "module",
   "scripts": {
-    "dev": "nodemon src/app.js",
-    "start": "babel-node src/app.js",
+    "dev": "nodemon src/app.mjs",
+    "start": "babel-node src/app.mjs",
     "test": "echo 'Error: no test specified' && exit 1"
   },
   "dependencies": {

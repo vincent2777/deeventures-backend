@@ -1,8 +1,8 @@
 "use strict";
 
 import { Router } from 'express';
-import CurrencyController from "../controllers/currency_controller";
-import TokenValidation from "../utils/token_validation";
+import CurrencyController from "../controllers/currency_controller.mjs";
+import TokenValidation from "../utils/token_validation.mjs";
 
 //  Set up Express Router.
 const currencyRouter = Router();

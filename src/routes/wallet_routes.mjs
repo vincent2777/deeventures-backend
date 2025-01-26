@@ -1,8 +1,8 @@
 "use strict";
 
 import { Router } from "express";
-import TokenValidation from "../utils/token_validation";
-import WalletController from "../controllers/wallet_controller";
+import TokenValidation from "../utils/token_validation.mjs";
+import WalletController from "../controllers/wallet_controller.mjs";
 
 
 

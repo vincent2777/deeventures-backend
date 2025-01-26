@@ -1,8 +1,8 @@
 "use strict";
 
-import models from "../database/models";
-import Response from "../utils/response";
-import SettingsValidator from "../utils/validators/setting_validator";
+import models from "../database/models/index.mjs";
+import Response from "../utils/response.mjs";
+import SettingsValidator from "../utils/validators/setting_validator.mjs";
 
 const { Settings } = models;
 

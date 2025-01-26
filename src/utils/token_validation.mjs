@@ -1,8 +1,8 @@
 "use strict";
 
 import jwt from 'jsonwebtoken';
-import Response from './response';
-import models from "../database/models";
+import Response from './response.mjs';
+import models from "../database/models/index.mjs";
 
 const { Users } = models;
 

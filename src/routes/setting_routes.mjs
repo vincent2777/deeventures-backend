@@ -1,8 +1,8 @@
 "use strict";
 
 import { Router } from "express";
-import TokenValidation from "../utils/token_validation";
-import SettingController from "../controllers/setting_controller";
+import TokenValidation from "../utils/token_validation.mjs";
+import SettingController from "../controllers/setting_controller.mjs";
 
 //  Set up Express Router.
 const settingRouter = Router();

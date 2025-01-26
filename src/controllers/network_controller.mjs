@@ -1,8 +1,8 @@
 "use strict";
 
-import models from "../database/models";
-import Response from "../utils/response";
-import NetworkValidator from "../utils/validators/airtime_validator";
+import models from "../database/models/index.mjs";
+import Response from "../utils/response.mjs";
+import NetworkValidator from "../utils/validators/airtime_validator.mjs";
 
 const { AirTimes } = models;
 

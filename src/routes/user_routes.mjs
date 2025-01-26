@@ -1,11 +1,11 @@
 "use strict";
 
 import { Router } from 'express';
-import UsersController from "../controllers/user_controller";
-import TokenValidation from "../utils/token_validation";
-import {uploadProfileImage} from "../utils/file_upload";
-import TransactionController from "../controllers/transaction_controller";
-import transactionRouter from "./transaction_routes";
+import UsersController from "../controllers/user_controller.mjs";
+import TokenValidation from "../utils/token_validation.mjs";
+import {uploadProfileImage} from "../utils/file_upload.mjs";
+import TransactionController from "../controllers/transaction_controller.mjs";
+import transactionRouter from "./transaction_routes.mjs";
 
 //  Set up Express Router.
 const userRouter = Router();

@@ -1,7 +1,7 @@
 "use strict";
 
 import { Model } from "sequelize";
-import {generateFixedRandomID} from "../../utils/random_number_generator";
+import {generateFixedRandomID} from "../../utils/random_number_generator.mjs";
 
 export default (sequelize, DataTypes) => {
   class Transaction extends Model {

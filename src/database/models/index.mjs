@@ -1,17 +1,12 @@
-"use strict";
-
-/*const fs = require('fs');
-const path = require('path');
-const Sequelize = require('sequelize');
-const process = require('process');
-const basename = path.basename(__filename);
-const env = process.env.APP_NODE_ENV || 'development';
-const config = require(__dirname + '/../../config/dbConfig.js')[env];
-const db = {};*/
 import fs from 'fs';
 import path from 'path';
 import { Sequelize } from 'sequelize';
-import dbConfig from '../../config/dbConfig';
+import dbConfig from '../../config/dbConfig.mjs';
+import { fileURLToPath } from 'url';  // Import the required function from 'url' module
+
+// Get the current file's path and basename
+const __filename = fileURLToPath(import.meta.url);  // Convert the URL to a file path
+const __dirname = path.dirname(__filename);  // Get the directory name from the file path
 
 const basename = path.basename(__filename);
 const env = process.env.APP_NODE_ENV || 'development';
@@ -26,22 +21,25 @@ if (config.use_env_variable) {
   sequelize = new Sequelize(config.database, config.username, config.password, config);
 }
 
-// Dynamically import models using import()
-fs
+// Dynamically import models using import() and handle async imports
+const modelPromises = fs
   .readdirSync(__dirname)
   .filter(file => {
     return (
       file.indexOf('.') !== 0 &&
       file !== basename &&
-      file.slice(-3) === '.js' &&
+      file.slice(-4) === '.mjs' &&  // Handle .mjs files specifically
       file.indexOf('.test.js') === -1
     );
   })
-  .forEach(async (file) => {
+  .map(async (file) => {
     const modelPath = path.join(__dirname, file);
     const model = (await import(modelPath)).default(sequelize, Sequelize.DataTypes);
     db[model.name] = model;
   });
+
+// Wait for all models to be loaded
+await Promise.all(modelPromises);
 
 // Set associations
 Object.keys(db).forEach(modelName => {
@@ -53,6 +51,5 @@ Object.keys(db).forEach(modelName => {
 db.sequelize = sequelize;
 db.Sequelize = Sequelize;
 
-// Export db using module.exports (not export default)
-module.exports = db;
-
+// Export db using ES module default export
+export default db;

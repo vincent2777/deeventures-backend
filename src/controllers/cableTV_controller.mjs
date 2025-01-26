@@ -1,8 +1,8 @@
 "use strict";
 
-import models from "../database/models";
-import Response from "../utils/response";
-import CableTVValidator from "../utils/validators/cableTV_validator";
+import models from "../database/models/index.mjs";
+import Response from "../utils/response.mjs";
+import CableTVValidator from "../utils/validators/cableTV_validator.mjs";
 
 const { CableTVs } = models;
 

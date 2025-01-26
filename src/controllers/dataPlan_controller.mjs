@@ -1,8 +1,8 @@
 "use strict";
 
-import models from "../database/models";
-import Response from "../utils/response";
-import DataPlanValidator from "../utils/validators/dataPlan_validator";
+import models from "../database/models/index.mjs";
+import Response from "../utils/response.mjs";
+import DataPlanValidator from "../utils/validators/dataPlan_validator.mjs";
 
 const { DataPlans } = models;
 

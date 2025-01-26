@@ -1,7 +1,7 @@
 "use strict";
 
 import bCrypt from "bcryptjs";
-const crypto = require('crypto');
+import crypto from 'crypto';  // Use import syntax instead of require
 import { Model } from "sequelize";
 
 export default (sequelize, DataTypes) => {
@@ -18,17 +18,12 @@ export default (sequelize, DataTypes) => {
         foreignKey: "user_id",
         onDelete: "CASCADE"
       });
-      /*User.hasOne(models.ReferralWallets, {
-        as: "referralWallet",
-        foreignKey: "user_id",
-        onDelete: "CASCADE"
-      });*/
 
       User.hasMany(models.Transactions, {
         as: "transactions",
         foreignKey: "user_id",
         onDelete: "CASCADE"
-      })
+      });
     }
   }
   User.init({
@@ -40,7 +35,8 @@ export default (sequelize, DataTypes) => {
     account_status: {
       type: DataTypes.ENUM('active', 'pending'),
       defaultValue: 'active', // Set default value here
-    }, country: DataTypes.STRING,
+    }, 
+    country: DataTypes.STRING,
     referred_by: DataTypes.STRING,
     reg_date: DataTypes.DATE,
     avatar: DataTypes.STRING
@@ -51,22 +47,22 @@ export default (sequelize, DataTypes) => {
     freezeTableName: true
   });
 
-  //  Before the Records will be created, let's do the following.
+  // Before the Records will be created, let's do the following.
   User.beforeCreate((user) => {
     user.password = crypto.createHash('md5').update(user.password).digest('hex');
     user.reg_date = new Date().getTime();
     user.username = user.email.split("@")[0] + Math.floor(Math.random() * 900);
   });
+
   User.beforeUpdate((user) => {
     if (!user.changed('password')) {
       user.password = crypto.createHash('md5').update(user.password).digest('hex');
-  }
-    // user.password = crypto.createHash('md5').update(user.password).digest('hex');
+    }
   });
 
-  //  After the record is persisted and before the persisted data are returned, let's remove the "password".
+  // After the record is persisted and before the persisted data are returned, let's remove the "password".
   User.afterCreate((user) => {
-    delete user.dataValues.password
+    delete user.dataValues.password;
   });
 
   return User;

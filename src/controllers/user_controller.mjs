@@ -3,12 +3,12 @@
 import jwt from "jsonwebtoken";
 import bCrypt from "bcryptjs";
 import { Op, Sequelize } from "sequelize";
-import models from "../database/models";
-import Response from "../utils/response";
-import AuthValidator from "../utils/validators/auth_validator";
-const crypto = require('crypto');
+import models from "../database/models/index.mjs";
+import Response from "../utils/response.mjs";
+import AuthValidator from "../utils/validators/auth_validator.mjs";
+import crypto from 'crypto';  // Use import syntax instead of require
 import otpGenerator from "otp-generator";
-import SendEMail from "../utils/send_email";
+import SendEMail from "../utils/send_email.mjs";
 
 const { Users, Wallets, ReferralWallets, Transactions, OTP } = models;
 

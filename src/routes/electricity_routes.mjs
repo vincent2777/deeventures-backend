@@ -1,9 +1,9 @@
 "use strict";
 
 import { Router } from "express";
-import CableTVController from "../controllers/cableTV_controller";
-import TokenValidation from "../utils/token_validation";
-import ElectricController from "../controllers/electricCompany_controller";
+import CableTVController from "../controllers/cableTV_controller.mjs";
+import TokenValidation from "../utils/token_validation.mjs";
+import ElectricController from "../controllers/electricCompany_controller.mjs";
 
 //  Set up Express Router.
 const electricityVRouter = Router();
